@@ -28,19 +28,17 @@ hero:
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Next steps
-
-<CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
+<CardGrid>
+	<Card title="Flexible representation" icon="translate">
+		Easily ingest and translate between Scientific Pitch Notation, Helmholtz notation, ABC and Lilypond. Extract MIDI values at any time.
 	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
+	<Card title="Spelling matters" icon="pencil">
+        C&#x266f; and D&#x266d; are different notes. A major third and a diminished fourth are different intervals. Meantonal is **semantically nondestructive**.
 	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
+	<Card title="It's just vectors" icon="random">
+		Under the hood notes and intervals are 2d vectors. Operations are simple to understand and fast to execute.
 	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
+	<Card title="Tuning-agnostic" icon="seti:audio">
+		Target any meantone tuning system, not just 12-tone equal temperament. You want 31 tones per octave? Done.
 	</Card>
 </CardGrid>
