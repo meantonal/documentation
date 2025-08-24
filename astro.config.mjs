@@ -34,7 +34,7 @@ export default defineConfig({
           ],
         },
         {
-          label: "Reference",
+          label: "Core Concepts",
           autogenerate: { directory: "reference" },
         },
       ],
