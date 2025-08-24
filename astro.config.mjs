@@ -20,6 +20,13 @@ export default defineConfig({
       ],
       sidebar: [
         {
+          label: "Quick Start",
+          items: [
+            // Each item here is one entry in the navigation menu.
+            { label: "What is meantonal?", slug: "quickstart/start" },
+          ],
+        },
+        {
           label: "Guides",
           items: [
             // Each item here is one entry in the navigation menu.

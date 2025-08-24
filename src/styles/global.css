@@ -27,6 +27,15 @@ Add additional Tailwind styles to this file:
 https://tailwindcss.com/docs/adding-custom-styles#using-custom-css
 */
 
+.title-wrapper {
+    height: 42px;
+    overflow-y: visible;
+}
+
+.site-title {
+    gap: 0.5rem;
+}
+
 a.site-title>img {
     position: relative;
     width: 1.8rem;
@@ -36,6 +45,16 @@ a.site-title>img {
 
 a.site-title>span {
     color: var(--sl-color-white);
+}
+
+.sidebar-content {
+    padding-top: 2rem;
+}
+
+@media (max-width: 800px) {
+    mobile-starlight-toc>nav>details {
+        padding-left: 2rem;
+    }
 }
 
 .hero>img {
