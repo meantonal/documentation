@@ -1,0 +1,101 @@
+---
+title: Notes
+description: An overview of how meantonal constructs notes
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Meantonal stores notes as two-dimensional vectors. C₋₁ is defined to be $(0, 0)$ to conform to 0 representing the [MIDI value](https://en.wikipedia.org/wiki/MIDI#Messages) for the same pitch.
+
+The first component of a note's vector represents increments in **whole steps**. The second component represents increments in **diatonic half steps** (that is, from C to D♭, not from C to C♯).
+
+### A simple major scale
+
+To help understand what this means, let's see how we would represent the notes of a C major scale from C₋₁ to C₀:
+
+|         |         |         |         |         |         |         |         |
+| :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+|   C₋₁   |   D₋₁   |   E₋₁   |   F₋₁   |   G₋₁   |   A₋₁   |   B₋₁   |   C₀    |
+| $(0,0)$ | $(1,0)$ | $(2,0)$ | $(2,1)$ | $(3,1)$ | $(4,1)$ | $(5,1)$ | $(5,2)$ |
+
+<Aside>
+
+D♭₋₁ and C♯₋₁ are represented by different vectors:
+
+- D♭₋₁ is a diatonic half step _above_ C₋₁ at $(0,1)$
+- C♯₋₁ is a diatonic half step _below_ D₋₁ at $(1,-1)$
+
+</Aside>
+
+### The meantonal grid
+
+Notes can therefore be thought of as lying on an infinite two-dimensional grid, of which an arbitrary portion is represented below as illustration.
+
+|      |      |      |      |      |      |      |      |      |
+| :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
+| D♭⁴₄ | E♭⁴₄ | F♭³₄ | G♭³₄ | A♭³₄ | B♭³₄ | C♭♭₅ | D♭♭₅ | E♭♭₅ |
+| C♭³₄ | D♭³₄ | E♭³₄ | F♭♭₄ | G♭♭₄ | A♭♭₄ | B♭♭₄ | C♭₅  | D♭₅  |
+| B♭³₃ | C♭♭₄ | D♭♭₄ | E♭♭₄ | F♭₄  | G♭₄  | A♭₄  | B♭₄  |  C₅  |
+| A♭♭₃ | B♭♭₃ | C♭₄  | D♭₄  | E♭₄  |  F₄  |  G₄  |  A₄  |  B₄  |
+| G♭₃  | A♭₃  | B♭₃  |  C₄  |  D₄  |  E₄  | F♯₄  | G♯₄  | A♯₄  |
+|  F₃  |  G₃  |  A₃  |  B₃  | C♯₄  | D♯₄  | E♯₄  | F♯♯₄ | G♯♯₄ |
+|  E₃  | F♯₃  | G♯₃  | A♯₃  | B♯₃  | C♯♯₄ | D♯♯₄ | E♯♯₄ | F♯³₄ |
+| D♯₃  | E♯₃  | F♯♯₃ | G♯♯₃ | A♯♯₃ | B♯♯₃ | C♯³₄ | D♯³₄ | E♯³₄ |
+| C♯♯₃ | D♯♯₃ | E♯♯₃ | F♯³₃ | G♯³₃ | A♯³₃ | B♯³₃ | C♯⁴₄ | D♯⁴₄ |
+
+In practice, Western music only generally uses accidentals up to double sharps and flats, but higher-order accidentals come for free as a result of meantonal's vector representation and can be useful for people working with alternative tuning systems, or in various algorithms for generating musical content that will eventually be enharmonically respelled for legibility.
+
+## Parsing SPN
+
+[Scientific pitch notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation) (SPN) is a common system for representing pitches in text. It consists of essentially three components:
+
+| Letter | Accidental | Octave |
+| :----: | :--------: | :----: |
+|   A    |     ♭      |   5    |
+
+Meantone constructs a note vector with the following formula:
+
+$$L + A(1, -1) + O(5, 2)$$
+
+Where $L$ represents the initial letter vector, selected from this table:
+
+|         |         |         |         |         |         |         |         |
+| :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+|    C    |    D    |    E    |    F    |    G    |    A    |    B    |    C    |
+| $(0,0)$ | $(1,0)$ | $(2,0)$ | $(2,1)$ | $(3,1)$ | $(4,1)$ | $(5,1)$ | $(5,2)$ |
+
+$A$ represents the accidental, whose values are assigned as follows:
+
+| Accidental |  A  |
+| :--------: | :-: |
+|    etc.    |     |
+|     ♯♯     |  2  |
+|     ♯      |  1  |
+|     ♮      |  0  |
+|     ♭      | -1  |
+|     ♭♭     | -2  |
+|    etc.    |     |
+
+$O$ represents the octave. Since we want $(0, 0)$ to represent C₋₁, the value of $O$ is greater than the octave component of a note's SPN value by 1.
+
+Putting it all together, the note vector for A♭5 would be:
+
+$$(4,1) + (-1)(1, -1) + 6(5, 2) = (4, 1) + (-1, 1) + (30, 12) = (33, 14)$$
+
+Parsing [ABC](https://notabc.app/abc/basics/) and [LilyPond](https://lilypond.org/) works much the same way.
+
+## Further reading
+
+In order to understand intervals and the various operations meantonal can perform, familiarity with [linear algebra](https://en.wikipedia.org/wiki/Linear_algebra) will help greatly. In particular, you will want to be comfortable with:
+
+- Vector addition and scalar multiplication.
+- Linear independence.
+- The dot product and what it means for two vectors to be orthogonal.
+- Matrices and matrix multiplication.
+- Linear maps and the null space of a matrix.
+
+All of meantonal's operations are very simple, but understanding these concepts will help greatly with acquiring intuitions about what's actually going on under the hood.
+
+[3Blue1Brown's YouTube series](https://www.youtube.com/watch?v=fNk_zzaMoSs) is an excellent introduction to all the relevant topics.
