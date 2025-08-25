@@ -1,0 +1,27 @@
+---
+title: Introduction
+description: Some notes about prerequisite knowledge for making sense of Meantonal's nuts and bolts
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="danger" title="Danger">
+
+Mathematics ahead. It's not too bad, but you have been warned.
+
+</Aside>
+
+This section details how Meantonal stores and operates on musical data.
+
+In order to understand how [notes](../notes) and [intervals](../intervals) are represented, and the various operations that can be carried out, familiarity with elementary [linear algebra](https://en.wikipedia.org/wiki/Linear_algebra) is necessary. In particular, you will want to be comfortable with:
+
+- Vector addition and scalar multiplication.
+- The dot product and what it means for two vectors to be orthogonal.
+- Matrices and matrix multiplication.
+- Linear maps and the null space of a matrix.
+
+All of Meantonal's operations are very simple, but understanding these concepts will help greatly with acquiring intuitions about what's actually going on under the hood.
+
+[3Blue1Brown's YouTube series](https://www.youtube.com/watch?v=fNk_zzaMoSs) is an excellent introduction to all the relevant topics.

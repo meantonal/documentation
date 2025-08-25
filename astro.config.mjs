@@ -29,7 +29,7 @@ export default defineConfig({
           label: "Quick Start",
           items: [
             // Each item here is one entry in the navigation menu.
-            { label: "What is meantonal?", slug: "quickstart/start" },
+            { label: "What is Meantonal?", slug: "quickstart/start" },
           ],
         },
         {
@@ -44,6 +44,9 @@ export default defineConfig({
           autogenerate: { directory: "reference" },
         },
       ],
+      components: {
+        Header: "./src/components/Header.astro",
+      },
       customCss: ["./src/styles/global.css"],
     }),
   ],

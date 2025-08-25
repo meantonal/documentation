@@ -1,8 +1,8 @@
 ---
 title: Notes
-description: An overview of how meantonal constructs notes
+description: An overview of how Meantonal constructs notes
 sidebar:
-  order: 1
+  order: 2
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -11,9 +11,9 @@ Meantonal stores notes as two-dimensional vectors. C₋₁ is defined to be $(0,
 
 The first component of a note's vector represents increments in **whole steps**. The second component represents increments in **diatonic half steps** (that is, from C to D♭, not from C to C♯).
 
-### A simple major scale
+### A simple scale
 
-To help understand what this means, let's see how we would represent the notes of a C major scale from C₋₁ to C₀:
+To help understand what this means, let's see how we would represent the notes of a C major scale from C₋₁ to C₀, given the [familiar formula](https://en.wikipedia.org/wiki/Major_scale#Structure) of WWHWWWH:
 
 |         |         |         |         |         |         |         |         |
 | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
@@ -29,7 +29,7 @@ D♭₋₁ and C♯₋₁ are represented by different vectors:
 
 </Aside>
 
-### The meantonal grid
+### The Meantonal grid
 
 Notes can therefore be thought of as lying on an infinite two-dimensional grid, of which an arbitrary portion is represented below as illustration.
 
@@ -45,7 +45,7 @@ Notes can therefore be thought of as lying on an infinite two-dimensional grid, 
 | D♯₃  | E♯₃  | F♯♯₃ | G♯♯₃ | A♯♯₃ | B♯♯₃ | C♯³₄ | D♯³₄ | E♯³₄ |
 | C♯♯₃ | D♯♯₃ | E♯♯₃ | F♯³₃ | G♯³₃ | A♯³₃ | B♯³₃ | C♯⁴₄ | D♯⁴₄ |
 
-In practice, Western music only generally uses accidentals up to double sharps and flats, but higher-order accidentals come for free as a result of meantonal's vector representation and can be useful for people working with alternative tuning systems, or in various algorithms for generating musical content that will eventually be enharmonically respelled for legibility.
+In practice, Western music only generally uses accidentals up to double sharps and flats, but higher-order accidentals come for free as a result of Meantonal's vector representation and can be useful for people working with alternative tuning systems, or in various algorithms for generating musical content that will eventually be enharmonically respelled for legibility.
 
 ## Parsing SPN
 
@@ -55,28 +55,28 @@ In practice, Western music only generally uses accidentals up to double sharps a
 | :----: | :--------: | :----: |
 |   A    |     ♭      |   5    |
 
-Meantone constructs a note vector with the following formula:
+Meantonal constructs a note vector with the following formula:
 
 $$L + A(1, -1) + O(5, 2)$$
 
 Where $L$ represents the initial letter vector, selected from this table:
 
-|         |         |         |         |         |         |         |         |
-| :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-|    C    |    D    |    E    |    F    |    G    |    A    |    B    |    C    |
-| $(0,0)$ | $(1,0)$ | $(2,0)$ | $(2,1)$ | $(3,1)$ | $(4,1)$ | $(5,1)$ | $(5,2)$ |
+|         |         |         |         |         |         |         |
+| :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+|    C    |    D    |    E    |    F    |    G    |    A    |    B    |
+| $(0,0)$ | $(1,0)$ | $(2,0)$ | $(2,1)$ | $(3,1)$ | $(4,1)$ | $(5,1)$ |
 
 $A$ represents the accidental, whose values are assigned as follows:
 
 | Accidental |  A  |
 | :--------: | :-: |
-|    etc.    |     |
+|   _etc._   |     |
 |     ♯♯     |  2  |
 |     ♯      |  1  |
 |     ♮      |  0  |
 |     ♭      | -1  |
 |     ♭♭     | -2  |
-|    etc.    |     |
+|   _etc._   |     |
 
 $O$ represents the octave. Since we want $(0, 0)$ to represent C₋₁, the value of $O$ is greater than the octave component of a note's SPN value by 1.
 
@@ -85,17 +85,3 @@ Putting it all together, the note vector for A♭5 would be:
 $$(4,1) + (-1)(1, -1) + 6(5, 2) = (4, 1) + (-1, 1) + (30, 12) = (33, 14)$$
 
 Parsing [ABC](https://notabc.app/abc/basics/) and [LilyPond](https://lilypond.org/) works much the same way.
-
-## Further reading
-
-In order to understand intervals and the various operations meantonal can perform, familiarity with [linear algebra](https://en.wikipedia.org/wiki/Linear_algebra) will help greatly. In particular, you will want to be comfortable with:
-
-- Vector addition and scalar multiplication.
-- Linear independence.
-- The dot product and what it means for two vectors to be orthogonal.
-- Matrices and matrix multiplication.
-- Linear maps and the null space of a matrix.
-
-All of meantonal's operations are very simple, but understanding these concepts will help greatly with acquiring intuitions about what's actually going on under the hood.
-
-[3Blue1Brown's YouTube series](https://www.youtube.com/watch?v=fNk_zzaMoSs) is an excellent introduction to all the relevant topics.
