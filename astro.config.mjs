@@ -53,7 +53,6 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-  site: "https://dylancobb.github.io/",
-  base: "/meantonal-site",
+  site: "http://meantonal.org",
   output: "static",
 });
