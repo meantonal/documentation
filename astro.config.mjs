@@ -40,8 +40,8 @@ export default defineConfig({
           ],
         },
         {
-          label: "Core Concepts",
-          autogenerate: { directory: "reference" },
+          label: "Learn",
+          autogenerate: { directory: "learn" },
         },
       ],
       components: {

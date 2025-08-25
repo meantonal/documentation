@@ -11,6 +11,16 @@ Meantonal stores notes as two-dimensional vectors. C₋₁ is defined to be $(0,
 
 The first component of a note's vector represents increments in **whole steps**. The second component represents increments in **diatonic half steps** (that is, from C to D♭, not from C to C♯).
 
+Internally, the Note type is defined as a simple struct:
+
+```c
+struct Note {
+    int w;
+    int h;
+};
+```
+
+
 ### A simple scale
 
 To help understand what this means, let's see how we would represent the notes of a C major scale from C₋₁ to C₀, given the [familiar formula](https://en.wikipedia.org/wiki/Major_scale#Structure) of WWHWWWH:
