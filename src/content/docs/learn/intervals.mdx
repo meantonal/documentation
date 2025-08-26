@@ -30,6 +30,15 @@ If $m$ is a *vertical* interval, $-m$ represents the same interval with the part
 
 </Aside>
 
+Internally, the `Interval` type is a struct identical to the `Note` type:
+
+```c
+struct Interval {
+    int8_t w;
+    int8_t h;
+};
+```
+
 ## Semitones
 
 Western music distinguishes between two types of semitones: **diatonic semitones** and **chromatic semitones**:
@@ -59,7 +68,7 @@ If subtracting or adding $(5, 2)$ causes an interval to cross to the other side 
 
 ## Parsing intervals
 
-The algorithm for constructing intervals from standard names like "A4" (for augmented fourth) or "m3" (for minor third) essentially works via the following steps:
+The algorithm for constructing intervals from standard names like "A4" (for augmented fourth) or "m3" (for minor third) essentially works as follows:
 
 <Steps>
 

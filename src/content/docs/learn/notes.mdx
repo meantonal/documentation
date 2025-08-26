@@ -9,14 +9,15 @@ import { Aside } from '@astrojs/starlight/components';
 
 Meantonal stores notes as two-dimensional vectors. C₋₁ is defined to be $(0, 0)$ to conform to 0 representing the [MIDI value](https://en.wikipedia.org/wiki/MIDI#Messages) for the same pitch.
 
-The first component of a note's vector represents increments in **whole steps**. The second component represents increments in **diatonic half steps** (that is, from C to D♭, not from C to C♯).
+- The first component of a note's vector represents increments in **whole steps**.
+- The second component represents increments in **diatonic half steps** (that is, from C to D♭, not from C to C♯).
 
-Internally, the Note type is defined as a simple struct:
+Internally, the `Note` type is defined as a simple struct:
 
 ```c
 struct Note {
-    int w;
-    int h;
+    int8_t w;
+    int8_t h;
 };
 ```
 
@@ -56,6 +57,16 @@ Notes can therefore be thought of as lying on an infinite two-dimensional grid, 
 | C♯♯₃ | D♯♯₃ | E♯♯₃ | F♯³₃ | G♯³₃ | A♯³₃ | B♯³₃ | C♯⁴₄ | D♯⁴₄ |
 
 In practice, Western music only generally uses accidentals up to double sharps and flats, but higher-order accidentals come for free as a result of Meantonal's vector representation and can be useful for people working with alternative tuning systems, or in various algorithms for generating musical content that will eventually be enharmonically respelled for legibility.
+
+## Range
+
+Although the abstract vector space of whole steps and half steps shown above is theoretically infinite, Meantonal represents these coordinates with 8-bit signed integers, meaning each coordinate's value has a range of $[-128,127]$.
+
+Just how big is this, though? Do we cover as many octaves as MIDI at least?
+
+To put things in perspective: $(-125,-50)$ and $(125, 50)$ represent C₋₂₆ and C₂₄ and are well-represented by the `Note` type. That's eome **fifty octaves** of range, or from roughly **240nHz** to **264MHz**.
+
+Suffice to say: you're not going to run out of notes.
 
 ## Parsing SPN
 

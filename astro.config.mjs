@@ -13,7 +13,7 @@ export default defineConfig({
   },
   integrations: [
     starlight({
-      title: "meantonal",
+      title: "Meantonal",
       logo: {
         src: "./src/assets/logo.svg",
       },
