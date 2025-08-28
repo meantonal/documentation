@@ -24,6 +24,9 @@ export default defineConfig({
           href: "https://github.com/meantonal/meantonal",
         },
       ],
+      editLink: {
+        baseUrl: "https://github.com/meantonal/documentation/blob/master/",
+      },
       sidebar: [
         {
           label: "Quick Start",
