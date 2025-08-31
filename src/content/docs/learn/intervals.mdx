@@ -2,7 +2,7 @@
 title: Intervals
 description: An overview of how meantonal constructs intervals
 sidebar:
-  order: 3
+  order: 2
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -33,10 +33,10 @@ If $m$ is a *vertical* interval, $-m$ represents the same interval with the part
 Internally, the `Interval` type is a struct identical to the `Note` type:
 
 ```c
-struct Interval {
+typedef struct {
     int w;
     int h;
-};
+} Interval;
 ```
 
 ## Semitones

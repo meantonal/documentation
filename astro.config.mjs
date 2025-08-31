@@ -29,18 +29,12 @@ export default defineConfig({
       },
       sidebar: [
         {
-          label: "Quick Start",
-          items: [
-            // Each item here is one entry in the navigation menu.
-            { label: "What is Meantonal?", slug: "quickstart/start" },
-          ],
+          label: "Start Here",
+          autogenerate: { directory: "start" },
         },
         {
-          label: "Guides",
-          items: [
-            // Each item here is one entry in the navigation menu.
-            { label: "Example Guide", slug: "guides/example" },
-          ],
+          label: "C API Reference",
+          autogenerate: { directory: "c" },
         },
         {
           label: "Learn",

@@ -2,7 +2,7 @@
 title: Notes
 description: An overview of how Meantonal constructs notes
 sidebar:
-  order: 2
+  order: 1
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -15,10 +15,10 @@ Meantonal stores notes as two-dimensional vectors. C₋₁ is defined to be $(0,
 Internally, the `Note` type is defined as a simple struct:
 
 ```c
-struct Note {
+typedef struct {
     int w;
     int h;
-};
+} Note;
 ```
 
 
