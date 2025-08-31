@@ -2,14 +2,14 @@
 title: Types
 description: An overview of the primitive types in Meantonal's C implementation.
 sidebar:
-  order: 1
+  order: 0
 ---
 
 ## Primitive Types
 
 The two most fundamental types in Meantonal are `Note` and `Interval`, so let's begin by defining them.
 
-### Note
+### `Note`
 
 A `Note` is a struct with two members, `w` and `h`.
 
@@ -23,7 +23,7 @@ typedef struct {
 - `w` holds the number of whole steps from $\sf{C}_{-1}$.
 - `h` holds the number of half steps from $\sf{C}_{-1}$.
 
-### Interval
+### `Interval`
 
 An `Interval` is a struct with two members, `w` and `h`.
 
@@ -45,7 +45,7 @@ Check the [Notes](/learn/notes) and [Intervals](/learn/intervals) pages in the L
 
 These types include mapping matrices for linear mapping operations and a special vector type to store the result of applying 2-dimensional maps.
 
-### Map1d
+### `Map1d`
 
 The `Map1d` type represents a $1\times2$ matrix. Its members are labelled `m0` and `m1` to reinforce this.
 
@@ -55,12 +55,12 @@ typedef struct {
 } Map1d;
 ```
 
-Multiplying a `Map1d` matrix with a `Note` or `Interval` produces a single integer as the result.
+Multiplying a `Map1d` matrix with a `Note` via [`note_map_1d`](/c/notes/note_map_1d), or `Interval` via [`interval_map_1d`](/c/intervals/#interval_map_1d), produces a single integer as the result.
 
 Multiplying a $1\times2$ matrix with a 2d vector is equivalent to taking the dot product between two 2d vectors, so they can also be thought of as 2d vectors if you prefer.
 
 
-### Map2d
+### `Map2d`
 
 The `Map2d` type represents a $2\times2$ matrix. Its members are labelled row-first, then column.
 
@@ -73,9 +73,9 @@ typedef struct {
 
 Multiplying a `Map2d` matrix with a `Note` or `Interval` produces another 2d vector as the result, generally typed as `MappedVec`.
 
-### MappedVec
+### `MappedVec`
 
-The `MappedVec` type exists to store the vectors resulting from applying a `Map2d`, to reinforce the idea they they no longer represent regular Meantonal `Note` or `Interval` vectors, and prevent their accidental operation as such.
+The `MappedVec` type exists to store the vectors resulting from applying a `Map2d` with [note_map_2d](/c/notes/#note_map_2d), to reinforce the idea they they no longer represent regular Meantonal `Note` or `Interval` vectors, and prevent their accidental operation as such.
 
 ```c
 typedef struct {
@@ -84,7 +84,7 @@ typedef struct {
 } MappedVec;
 ```
 
-### MirrorAxis
+### `MirrorAxis`
 
 The `MirrorAxis` type is to do with a different kind of mapping operation: pitch inversion about a fixed axis.
 
@@ -97,6 +97,8 @@ typedef struct {
 
 Slightly misleadingly, it looks like a regular `Note` or `Interval`, but this is strictly a result of how the inversion is applied.
 
+Created by [`axis_create`](/c/notes/#axis_create) or [`axis_from_spn`](/c/notes/#axis_from_spn). Used with [`note_invert`](/c/notes/#note_invert).
+
 ## Alternative Representations
 
 The following types store alternative representations of `Note` and `Interval` vectors. They correspond more closely with natural language, and can therefore potentially be useful as:
@@ -104,7 +106,7 @@ The following types store alternative representations of `Note` and `Interval` v
 - An intermediate type on the way to rendering standard notation.
 - An intermediate parsing target from plaintext before converting into `Note` or `Interval` vectors.
 
-### StandardNote
+### `StandardNote`
 
 The `StandardNote` type stores notes in effectively the same fashion as [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation): as a triple of `letter`, `accidental`, and `octave`.
 
@@ -115,3 +117,5 @@ typedef struct {
     int octave;
 } StandardNote;
 ```
+
+Created with [`note_to_standard`](/c/notes/#note_to_standard) from a regular `Note`. More rarely parsed into a `Note` using [`note_from_standard`](/c/notes/#note_from_standard).

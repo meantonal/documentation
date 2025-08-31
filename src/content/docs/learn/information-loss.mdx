@@ -18,9 +18,42 @@ Here are some basic facts about the sets our musical information lives in:
 - Abstractions like "12 tone pitch class" or "scale degree" have a finite total number of values, and work by modular arithmetic.
     - That is, they live in $\Z_n$ for some $n$.
 
-Most of Meantonal's information querying is done via [linear maps](https://en.wikipedia.org/wiki/Linear_map) from $\Z^2$ to $\Z$ via multiplication with a $1\times2$ mapping matrix. Modular information like pitch class is then queried by taking remainders after regular euclidean division.
+Most of Meantonal's information querying is done via [linear maps](https://en.wikipedia.org/wiki/Linear_map) from $\Z^2$ to $\Z$ via multiplication with a $1\times2$ mapping matrix.
+
+<Aside>
+
+To find the MIDI value of $\sf{C}\sharp_4$, represented by $(26, 9)$, we use the MIDI mapping matrix $[2, 1]$:
+
+$$
+[2, 1]
+\begin{pmatrix}
+26 \\
+9
+\end{pmatrix} = (2)(26) + (1)(9) = 61
+$$
+
+Notice we went from a 2d vector to a single integer: $\Z^2\rightarrow\Z$.
+
+</Aside>
+
 
 No linear map from $\Z^2$ to $\Z$ is two-way. If $\sf{C}\sharp_4$ and $\sf{D}\flat_4$ both map to the MIDI number 61, the mapping was not **one-to-one**. No inverse map can exist.
+
+Modular information like pitch class can be queried by taking remainders after regular Euclidean division.
+
+<Aside>
+
+To find the 12-tone pitch class of $\sf{C}\sharp_4$, which we established was represented by the MIDI number 61, we could simply divide by 12 and take the remainder:
+
+$$
+61\div12 = 5\; \sf{remainder}\; 1
+$$
+
+1 is therefore the 12-tone pitch class of the note $\sf{C}\sharp$. Since there are an infinite number of integers, but only 12 pitch classes: $\Z\rightarrow\Z_{12}$.
+
+The previous map can also be composed with this one: $\Z^2\rightarrow\Z_{12}$.
+
+</Aside>
 
 No mapping from $\Z$ to $\Z_n$ is two way. If MIDI numbers 65 and 77  are both mapped to the 12-tone pitch class 5 the mapping was not **one-to-one**. No inverse map can exist.
 
