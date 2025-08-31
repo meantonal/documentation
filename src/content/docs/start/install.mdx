@@ -5,7 +5,17 @@ sidebar:
   order: 1
 ---
 
-Currently there is only one version of Meantonal, implemented in C. Adding it to your project is as simple as copying the [`meantonal.h`](https://raw.githubusercontent.com/meantonal/meantonal/refs/heads/master/meantonal.h) header file somewhere into your project's directory.
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Currently there is only one version of Meantonal, implemented in C. Adding it to your project is as simple as copying the [`meantonal.h`](https://raw.githubusercontent.com/meantonal/meantonal/refs/heads/master/meantonal.h) header file somewhere into your project's directory, or use the following bash script:
+
+<Tabs>
+  <TabItem label="Bash">
+```bash frame=none
+curl https://meantonal.org/meantonal.h > meantonal.h
+```
+  </TabItem>
+</Tabs>
 
 You must `#define MEANTONAL` in exactly **one** file before the first inclusion of `meantonal.h`:
 
