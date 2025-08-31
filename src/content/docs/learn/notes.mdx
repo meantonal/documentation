@@ -10,9 +10,9 @@ import { Aside } from '@astrojs/starlight/components';
 Meantonal stores notes as two-dimensional vectors. C₋₁ is defined to be $(0, 0)$ to conform to 0 representing the [MIDI value](https://en.wikipedia.org/wiki/MIDI#Messages) for the same pitch.
 
 - The first component of a note's vector represents increments in **whole steps**.
-- The second component represents increments in **diatonic half steps** (that is, from C to D♭, not from C to C♯).
+- The second component represents increments in **diatonic semitones** (that is, from C to D♭, not from C to C♯).
 
-Internally, the `Note` type is defined as a simple struct:
+Internally, the [`Note`](/c/types/#note) type is defined as a simple struct:
 
 ```c
 typedef struct {

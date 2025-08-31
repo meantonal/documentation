@@ -12,15 +12,15 @@ Here are some basic facts about the sets our musical information lives in:
 - Pitch is 1-dimensional: frequencies are real numbers.
     - That is: they live in $\R$.
 - Meantonal's Note and Interval vectors are discrete and 2-dimensional.
-    - That is: they live in $\Z\times\Z$.
+    - That is: they live in $\Z^2$.
 - Tuning systems like 12-tone equal temperament have a finite number of notes per octave.
     - That is, they live in $\Z$.
 - Abstractions like "12 tone pitch class" or "scale degree" have a finite total number of values, and work by modular arithmetic.
     - That is, they live in $\Z_n$ for some $n$.
 
-Most of Meantonal's information querying is done via [linear maps](https://en.wikipedia.org/wiki/Linear_map) from $\Z\times\Z$ to $\Z$ via multiplication with a $1\times2$ mapping matrix. Modular information like pitch class is then queried via taking remainders after regular euclidean division.
+Most of Meantonal's information querying is done via [linear maps](https://en.wikipedia.org/wiki/Linear_map) from $\Z^2$ to $\Z$ via multiplication with a $1\times2$ mapping matrix. Modular information like pitch class is then queried by taking remainders after regular euclidean division.
 
-No linear map from $\Z\times\Z$ to $\Z$ is two-way. If $\sf{C}\sharp_4$ and $\sf{D}\flat_4$ both map to the MIDI number 61, the mapping was not **one-to-one**. No inverse map can exist.
+No linear map from $\Z^2$ to $\Z$ is two-way. If $\sf{C}\sharp_4$ and $\sf{D}\flat_4$ both map to the MIDI number 61, the mapping was not **one-to-one**. No inverse map can exist.
 
 No mapping from $\Z$ to $\Z_n$ is two way. If MIDI numbers 65 and 77  are both mapped to the 12-tone pitch class 5 the mapping was not **one-to-one**. No inverse map can exist.
 

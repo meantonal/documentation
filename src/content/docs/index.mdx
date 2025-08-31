@@ -28,8 +28,19 @@ hero:
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-<CardGrid stagger>
+<Card title="Install" icon="rocket">
+  <Tabs>
+    <TabItem label="Bash">
+    ```bash frame=none
+    curl https://meantonal.org/meantonal.h > meantonal.h
+    ```
+    </TabItem>
+  </Tabs>
+</Card>
+
+<CardGrid>
 	<Card title="Flexible representation" icon="translate">
 		Easily ingest and translate between Scientific Pitch Notation, Helmholtz notation, ABC and Lilypond. Extract MIDI values at any time.
 	</Card>
