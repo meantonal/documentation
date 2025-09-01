@@ -1,11 +1,11 @@
 ---
 title: Notes
-description: Reference page for functions that return Note vectors.
+description: Reference page for functions that create, transform or query Note vectors.
 sidebar:
   order: 2
 ---
 
-This page details all the functions that create and manipulate notes directly.
+This page details all the functions that create, transform or query [`Note`](/c/types/#note) vectors.
 
 ## Creating Notes
 
@@ -37,6 +37,14 @@ if (int note_from_spn(str, &p)) {
 ## Common Queries
 
 These functions query commonly required information from `Note` vectors.
+
+### `note_chroma`
+
+```c
+int note_chroma(Note p);
+```
+
+Returns the number of perfect fifths (signed) separating a `Note` from C. Abstracts octave information away.
 
 ### `note_letter`
 
@@ -80,21 +88,13 @@ int note_midi(Note p);
 
 Returns the standard MIDI value for a given `Note`.
 
-### `note_chroma`
-
-```c
-int note_chroma(Note p);
-```
-
-Returns the number of perfect fifths (signed) separating a Note from C. Abstracts octave information away.
-
 ### `notes_equal`
 
 ```c
 bool notes_equal(Note p, Note q);
 ```
 
-Predicate function that checks whether two `Note` vectors are equal. Note it does **not** check whether they are enharmonically equivalent: they must literally represent the same note in [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) to return `true`.
+Predicate function that checks whether two `Note` vectors are equal. Note that it does **not** check whether they are enharmonically equivalent: they must literally represent the same note in [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) to return `true`.
 
 ### `notes_enharmonic`
 
@@ -119,7 +119,7 @@ notes_enharmonic(p, q, 12); // false; Gbb and Ex are not enharmonic in 12tet
 
 ## Maps and Transformations
 
-### `note_transpose_real`
+### `transpose_real`
 
 ```c
 Note transpose_real(Note p, Interval m);

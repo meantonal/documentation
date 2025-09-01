@@ -1,0 +1,141 @@
+---
+title: Intervals
+description: Reference page for functions that create, transform or query Interval vectors.
+sidebar:
+  order: 3
+---
+
+This page details all the functions that create, transform or query [`Interval`](/c/types/#interval) vectors.
+
+## Creating Intervals
+
+`Interval` vectors can obviously be initialised directly:
+
+```c
+Interval m = { 3, 0 }; // initialised to an augmented 4th
+```
+
+It's often more convenient, however, to be able to create new `Interval`s from old, or to assign them values by parsing strings in accepted formats.
+
+### `interval_from_name`
+
+```c
+int interval_from_name(const char *s, Interval *out);
+```
+
+Parses an `Interval` from a standard abbreviated name. Outputs via a passed in `Interval` pointer. Returns 1 if anything went wrong during parsing.
+
+Interval name can be in the scientific style. For example:
+- "M3" will make a major third.
+- "m3" will make a minor third.
+- "P5" will make a perfect fifth.
+- "A6" will make an augmented 6th.
+- "d5" will make a diminished 5th.
+
+It can also be in the "jazz" style:
+
+- Plain numbers like "5" and "7" will default to major.
+- b or # will alter intervals from these default positions, and can be stacked.
+
+So "m7" and "b7" will both produce a minor 7th `Interval` vector.
+
+Safe usage if the string is being passed in dynamically:
+
+```c
+Interval m;
+if (int interval_from_name(str, &p)) {
+    // handle parsing error
+}
+```
+
+### `interval_from_spn`
+
+```c
+int interval_from_spn(const char *p_str, const char *q_str, Interval *out);
+```
+
+Parses two strings into `Note` vectors from [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation) to generate an `Interval` vector from. Outputs via a passed in `Interval` pointer. Returns 1 if anything went wrong during parsing.
+
+Safe usage if the string is being passed in dynamically:
+
+```c
+Interval m;
+if (int interval_from_spn(str1, str2, &p)) {
+    // handle parsing error
+}
+```
+
+### `interval_between`
+
+```c
+Interval interval_between(Note p, Note q);
+```
+
+Creates an `Interval` from two `Note` vectors by subtracting the first from the second.
+
+## Common Queries
+
+### `interval_chroma`
+
+```c
+int interval_chroma(Interval m);
+```
+
+Returns the number of perfect fifths (signed) separating an `Interval` from the unison. Abstracts octave information away.
+
+### `stepspan`
+
+```c
+int stepspan(Interval m);
+```
+
+Returns the number of diatonic steps subtended by an interval. Basically the same as the standard generic interval sizes used in musical discourse, except zero-indexed so a "third" will have a stepspan of 2, not 3.
+
+This format is more amenable to basic arithmetic, and allows negative stepspans to represent descending horizontal intervals, or voice crossed vertical intervals.
+
+### `interval_quality`
+
+```c
+int interval_quality(Interval m);
+```
+
+Returns an `Interval`'s quality as a signed integer:
+
+|            |     |
+| :--------: | :-: |
+| Augmented  |  2  |
+| Major      |  1  |
+| Perfect    |  0  |
+| Minor      | -1  |
+| Diminished | -2  |
+
+etc. for doubly-augmented/diminished intervals and beyond.
+
+### `intervals_equal`
+
+```c
+bool intervals_equal(Interval m, Interval n);
+```
+
+Predicate function that checks whether two `Interval` vectors are equal. Note that it does **not** check whether they are enharmonically equivalent: they must literally represent the same *vector*.
+
+### `intervals_enharmonic`
+
+```c
+bool intervals_enharmonic(Interval m, Interval n, int edo);
+```
+
+Predicate function that checks whether two `Note` vectors are enharmonics in a given EDO tuning system. The third parameter 'edo' is for passing in the tuning system to check against. So for example:
+
+```c
+Interval m, n;
+interval_from_name("A6", &m);
+interval_from_name("m7", &n);
+intervals_enharmonic(m, n, 12); // true; A6 and m7 are enharmonic in 12tet
+intervals_enharmonic(m, n, 31); // false; A6 and m7 are not enharmonic in 31tet
+
+interval_from_name("dddd10", &m);
+interval_from_name("p8", &n);
+intervals_enharmonic(m, n, 31); // true;
+intervals_enharmonic(m, n, 12); // false;
+```

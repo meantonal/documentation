@@ -41,6 +41,41 @@ The `Note` and `Interval` type are effectively identical, and one can even be ca
 
 Check the [Notes](/learn/notes) and [Intervals](/learn/intervals) pages in the Learn category for an explanation of what these representations mean mathematically, and how they're constructed.
 
+## Key types
+
+These types store information used by Meantonal to reconcile notes against a governing key or mode.
+
+### `enum Mode`
+
+Used with functions that operate on `Key`s.
+
+```c
+enum Mode {
+    LYDIAN,
+    IONIAN,
+    MIXOLYDIAN,
+    DORIAN,
+    AEOLIAN,
+    PHRYGIAN,
+    LOCRIAN,
+
+    MAJOR = IONIAN,
+    MINOR = AEOLIAN
+};
+
+```
+
+### Key
+
+A key is a struct holding the "chroma" of a key (a proxy for letter name + accidental without an octave), and a mode.
+
+```c
+typedef struct {
+    int chroma;
+    enum Mode mode;
+} Key;
+```
+
 ## Map Types
 
 These types include mapping matrices for linear mapping operations and a special vector type to store the result of applying 2-dimensional maps.
