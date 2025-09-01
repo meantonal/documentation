@@ -117,7 +117,7 @@ pitches_enharmonic(p, q, 31); // true; Gbb and Ex are enharmonic in 31tet
 pitches_enharmonic(p, q, 12); // false; Gbb and Ex are not enharmonic in 12tet
 ```
 
-## Maps and Transformations
+## Transformations
 
 ### `transpose_real`
 
@@ -126,53 +126,6 @@ Pitch transpose_real(Pitch p, Interval m);
 ```
 
 This function takes a `Pitch` and an `Interval`, and returns a new `Pitch` formed by their sum.
-
-### `pitch_map_1d`
-
-```c
-int pitch_map_1d(Pitch p, Map1d T);
-```
-
-This function allows an arbitrary `Map1d` linear map to be applied to a `Pitch`, sending it to some integer. Allows things like:
-
-```c
-pitch_map_1d(p, ED31);
-```
-
-This would send any `Pitch` to a 31-tone equal temperament equivalent of MIDI numbering, such that:
-
-|   |                     |
-|:-:|:-------------------:|
-| 0 | $\sf{C}_{-1}$       |
-| 1 | $\sf{D}𝄫_{-1}$      |
-| 2 | $\sf{C}\sharp_{-1}$ |
-| 3 | $\sf{D}\flat_{-1}$  |
-| 4 | $\sf{C}𝄪_{-1}$      |
-| 5 | $\sf{D}_{-1}$       |
-| 6 | $\sf{E}𝄫_{-1}$      |
-
-*and so on...*
-
-### `pitch_map_2d`
-
-```c
-MappedVec pitch_map_2d(Pitch p, Map2d T);
-```
-
-This function allows an arbitrary `Map2d` linear map to be applied to a `Pitch`, essentially facilitating a [change of basis](https://en.wikipedia.org/wiki/Change_of_basis). The returned vector is therefore of a unique type: [`MappedVec`](/c/types/#mappedvec).
-
-This could be useful if working with generalised isomorphic keyboard layouts. For example, if reading numbers off a grid intended to represent a [Wicki-Hayden layout](https://en.wikipedia.org/wiki/Wicki%E2%80%93Hayden_pitch_layout), they could be parsed into Meantonal `Pitch` vectors simply:
-
-```c
-typedef struct {
-    int x, y;
-} Key;
-
-Pitch pitch_from_key(Key k) {
-    // casts becaues pitch_map_2d expects Pitch and returns MappedVec.
-    return (Pitch) pitch_map_2d((Pitch) k, WICKI_FROM);
-}
-```
 
 ### `axis_create`
 
