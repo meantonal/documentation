@@ -60,11 +60,11 @@ In practice, Western music only generally uses accidentals up to double sharps a
 
 ## Range
 
-Although the abstract vector space of whole steps and half steps shown above is theoretically infinite, Meantonal represents these coordinates with 8-bit signed integers, meaning each coordinate's value has a range of $[-128,127]$.
+Although the abstract vector space of whole steps and half steps shown above is theoretically infinite, Meantonal represents these coordinates with signed integers.
 
-Just how big is this, though? Do we cover as many octaves as MIDI at least?
+Just how much range is this, though? Do we cover as many octaves as MIDI at least?
 
-To put things in perspective: $(-125,-50)$ and $(125, 50)$ represent C₋₂₆ and C₂₄ and are well-represented by the `Note` type. That's eome **fifty octaves** of range, or from roughly **240nHz** to **264MHz**.
+To put things in perspective: $(-125,-50)$ and $(125, 50)$ represent C₋₂₆ and C₂₄ and would be well-represented by the `Note` type even if it were capped at 8-bit integers. That's eome **fifty octaves** of range, or from roughly **240nHz** to **264MHz**.
 
 Suffice to say: you're not going to run out of notes.
 
