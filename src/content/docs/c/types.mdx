@@ -7,17 +7,17 @@ sidebar:
 
 ## Primitive Types
 
-The two most fundamental types in Meantonal are `Note` and `Interval`, so let's begin by defining them.
+The two most fundamental types in Meantonal are `Pitch` and `Interval`, so let's begin by defining them.
 
-### `Note`
+### `Pitch`
 
-A `Note` is a struct with two members, `w` and `h`.
+A `Pitch` is a struct with two members, `w` and `h`.
 
 ```c
 typedef struct {
     int w; // whole steps
     int h; // half steps
-} Note;
+} Pitch;
 ```
 
 - `w` holds the number of whole steps from $\sf{C}_{-1}$.
@@ -37,13 +37,13 @@ typedef struct {
 - `w` holds the number of whole steps from the unison.
 - `h` holds the number of half steps from the unison.
 
-The `Note` and `Interval` type are effectively identical, and one can even be cast to the other. They are distinct because they generally represent different things. An `Interval` describes the distance *between* two `Note`s.
+The `Pitch` and `Interval` type are effectively identical, and one can even be cast to the other. They are distinct because they generally represent different things. An `Interval` describes the distance *between* two `Pitch` vectors.
 
-Check the [Notes](/learn/notes) and [Intervals](/learn/intervals) pages in the Learn category for an explanation of what these representations mean mathematically, and how they're constructed.
+Check the [Pitches](/learn/pitch) and [Intervals](/learn/intervals) pages in the Learn category for an explanation of what these representations mean mathematically, and how they're constructed.
 
 ## Key types
 
-These types store information used by Meantonal to reconcile notes against a governing key or mode.
+These types store information used by Meantonal to reconcile pitches against a governing key or mode.
 
 ### `enum Mode`
 
@@ -90,7 +90,7 @@ typedef struct {
 } Map1d;
 ```
 
-Multiplying a `Map1d` matrix with a `Note` via [`note_map_1d`](/c/notes/note_map_1d), or `Interval` via [`interval_map_1d`](/c/intervals/#interval_map_1d), produces a single integer as the result.
+Multiplying a `Map1d` matrix with a `Pitch` via [`pitch_map_1d`](/c/pitch/pitch_map_1d), or `Interval` via [`interval_map_1d`](/c/intervals/#interval_map_1d), produces a single integer as the result.
 
 Multiplying a $1\times2$ matrix with a 2d vector is equivalent to taking the dot product between two 2d vectors, so they can also be thought of as 2d vectors if you prefer.
 
@@ -106,11 +106,11 @@ typedef struct {
 } Map2d;
 ```
 
-Multiplying a `Map2d` matrix with a `Note` or `Interval` produces another 2d vector as the result, generally typed as `MappedVec`.
+Multiplying a `Map2d` matrix with a `Pitch` or `Interval` produces another 2d vector as the result, generally typed as `MappedVec`.
 
 ### `MappedVec`
 
-The `MappedVec` type exists to store the vectors resulting from applying a `Map2d` with [note_map_2d](/c/notes/#note_map_2d), to reinforce the idea they they no longer represent regular Meantonal `Note` or `Interval` vectors, and prevent their accidental operation as such.
+The `MappedVec` type exists to store the vectors resulting from applying a `Map2d` with [pitch_map_2d](/c/pitch/#pitch_map_2d), to reinforce the idea they they no longer represent regular Meantonal `Pitch` or `Interval` vectors, and prevent their accidental operation as such.
 
 ```c
 typedef struct {
@@ -130,27 +130,27 @@ typedef struct {
 } MirrorAxis;
 ```
 
-Slightly misleadingly, it looks like a regular `Note` or `Interval`, but this is strictly a result of how the inversion is applied.
+Slightly misleadingly, it looks like a regular `Pitch` or `Interval`, but this is strictly a result of how the inversion is applied.
 
-Created by [`axis_create`](/c/notes/#axis_create) or [`axis_from_spn`](/c/notes/#axis_from_spn). Used with [`note_invert`](/c/notes/#note_invert).
+Created by [`axis_create`](/c/pitch/#axis_create) or [`axis_from_spn`](/c/pitch/#axis_from_spn). Used with [`pitch_invert`](/c/pitch/#pitch_invert).
 
 ## Alternative Representations
 
-The following types store alternative representations of `Note` and `Interval` vectors. They correspond more closely with natural language, and can therefore potentially be useful as:
+The following types store alternative representations of `Pitch` and `Interval` vectors. They correspond more closely with natural language, and can therefore potentially be useful as:
 - An intermediate type on the way to pretty printing information about a group of musical objects to the end user.
 - An intermediate type on the way to rendering standard notation.
-- An intermediate parsing target from plaintext before converting into `Note` or `Interval` vectors.
+- An intermediate parsing target from plaintext before converting into `Pitch` or `Interval` vectors.
 
-### `StandardNote`
+### `StandardPitch`
 
-The `StandardNote` type stores notes in effectively the same fashion as [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation): as a triple of `letter`, `accidental`, and `octave`.
+The `StandardPitch` type stores pitches in effectively the same fashion as [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation): as a triple of `letter`, `accidental`, and `octave`.
 
 ```c
 typedef struct {
     int letter;
     int accidental;
     int octave;
-} StandardNote;
+} StandardPitch;
 ```
 
-Created with [`note_to_standard`](/c/notes/#note_to_standard) from a regular `Note`. More rarely parsed into a `Note` using [`note_from_standard`](/c/notes/#note_from_standard).
+Created with [`pitch_to_standard`](/c/pitch/#pitch_to_standard) from a regular `Pitch`. More rarely parsed into a `Pitch` using [`pitch_from_standard`](/c/pitch/#pitch_from_standard).

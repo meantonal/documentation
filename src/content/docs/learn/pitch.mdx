@@ -1,30 +1,30 @@
 ---
-title: Notes
-description: An overview of how Meantonal constructs notes
+title: Pitch
+description: An overview of how Meantonal constructs pitches
 sidebar:
   order: 1
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-Meantonal stores notes as two-dimensional vectors. C₋₁ is defined to be $(0, 0)$ to conform to 0 representing the [MIDI value](https://en.wikipedia.org/wiki/MIDI#Messages) for the same pitch.
+Meantonal stores pitches as two-dimensional vectors. C₋₁ is defined to be $(0, 0)$ to conform to 0 representing the [MIDI value](https://en.wikipedia.org/wiki/MIDI#Messages) for the same pitch.
 
-- The first component of a note's vector represents increments in **whole steps**.
+- The first component of a pitch's vector represents increments in **whole steps**.
 - The second component represents increments in **diatonic semitones** (that is, from C to D♭, not from C to C♯).
 
-Internally, the [`Note`](/c/types/#note) type is defined as a simple struct:
+Internally, the [`Pitch`](/c/types/#pitch) type is defined as a simple struct:
 
 ```c
 typedef struct {
     int w;
     int h;
-} Note;
+} Pitch;
 ```
 
 
 ### A simple scale
 
-To help understand what this means, let's see how we would represent the notes of a C major scale from C₋₁ to C₀, given the [familiar formula](https://en.wikipedia.org/wiki/Major_scale#Structure) of WWHWWWH:
+To help understand what this means, let's see how we would represent the pitches of a C major scale from C₋₁ to C₀, given the [familiar formula](https://en.wikipedia.org/wiki/Major_scale#Structure) of WWHWWWH:
 
 |         |         |         |         |         |         |         |         |
 | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
@@ -42,7 +42,7 @@ D♭₋₁ and C♯₋₁ are represented by different vectors:
 
 ### The Meantonal grid
 
-Notes can therefore be thought of as lying on an infinite two-dimensional grid, of which an arbitrary portion is represented below as illustration.
+Pitches can therefore be thought of as lying on an infinite two-dimensional grid, of which an arbitrary portion is represented below as illustration.
 
 |      |      |      |      |      |      |      |      |      |
 | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
@@ -64,9 +64,9 @@ Although the abstract vector space of whole steps and half steps shown above is 
 
 Just how much range is this, though? Do we cover as many octaves as MIDI at least?
 
-To put things in perspective: $(-125,-50)$ and $(125, 50)$ represent C₋₂₆ and C₂₄ and would be well-represented by the `Note` type even if it were capped at 8-bit integers. That's eome **fifty octaves** of range, or from roughly **240nHz** to **264MHz**.
+To put things in perspective: $(-125,-50)$ and $(125, 50)$ represent C₋₂₆ and C₂₄ and would be well-represented by the `Pitch` type even if it were capped at 8-bit integers. That's eome **fifty octaves** of range, or from roughly **240nHz** to **264MHz**.
 
-Suffice to say: you're not going to run out of notes.
+Suffice to say: you're not going to run out of pitches.
 
 ## Parsing SPN
 
@@ -76,7 +76,7 @@ Suffice to say: you're not going to run out of notes.
 | :----: | :--------: | :----: |
 |   A    |     ♭      |   5    |
 
-Meantonal constructs a note vector with the following formula:
+Meantonal constructs a pitch vector with the following formula:
 
 $$L + A(1, -1) + O(5, 2)$$
 
@@ -99,9 +99,9 @@ $A$ represents the accidental, whose values are assigned as follows:
 |     ♭♭     | -2  |
 |   _etc._   |     |
 
-$O$ represents the octave. Since we want $(0, 0)$ to represent C₋₁, the value of $O$ is greater than the octave component of a note's SPN value by 1.
+$O$ represents the octave. Since we want $(0, 0)$ to represent C₋₁, the value of $O$ is greater than the octave component of a pitch's SPN value by 1.
 
-Putting it all together, the note vector for A♭5 would be:
+Putting it all together, the pitch vector for A♭5 would be:
 
 $$(4,1) + (-1)(1, -1) + 6(5, 2) = (4, 1) + (-1, 1) + (30, 12) = (33, 14)$$
 

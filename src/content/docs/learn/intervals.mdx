@@ -8,7 +8,7 @@ sidebar:
 import { Aside } from '@astrojs/starlight/components';
 import { Steps } from '@astrojs/starlight/components';
 
-Much like [notes](/learn/notes), Meantonal stores intervals as two-dimensional vectors. In fact, intervals are simply differences between two notes' vectors:
+Much like [pitches](/learn/pitch), Meantonal stores intervals as two-dimensional vectors. In fact, intervals are simply differences between two pitches' vectors:
 
 $$\sf{C_4} = (25, 10) \quad \sf{E_4} = (27, 10)$$
 
@@ -18,7 +18,7 @@ So $(2, 0)$ is the unique vector that defines a major third.
 
 <Aside>
 
-If we interchange notes in the above calculation:
+If we interchange pitches in the above calculation:
 
 $$\sf{C_4} - \sf{E_4} = (-2, 0) = -(\sf{E_4} - \sf{C_4})$$
 
@@ -30,7 +30,7 @@ If $m$ is a *vertical* interval, $-m$ represents the same interval with the part
 
 </Aside>
 
-Internally, the [`Interval`](/c/types/#interval) type is a struct identical to the `Note` type:
+Internally, the [`Interval`](/c/types/#interval) type is a struct identical to the `Pitch` type:
 
 ```c
 typedef struct {

@@ -1,5 +1,5 @@
 ---
-title: Intervals
+title: Interval
 description: Reference page for functions that create, transform or query Interval vectors.
 sidebar:
   order: 3
@@ -54,7 +54,7 @@ if (int interval_from_name(str, &p)) {
 int interval_from_spn(const char *p_str, const char *q_str, Interval *out);
 ```
 
-Parses two strings into `Note` vectors from [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation) to generate an `Interval` vector from. Outputs via a passed in `Interval` pointer. Returns 1 if anything went wrong during parsing.
+Parses two strings into `Pitch` vectors from [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation) to generate an `Interval` vector from. Outputs via a passed in `Interval` pointer. Returns 1 if anything went wrong during parsing.
 
 Safe usage if the string is being passed in dynamically:
 
@@ -68,10 +68,10 @@ if (int interval_from_spn(str1, str2, &p)) {
 ### `interval_between`
 
 ```c
-Interval interval_between(Note p, Note q);
+Interval interval_between(Pitch p, Pitch q);
 ```
 
-Creates an `Interval` from two `Note` vectors by subtracting the first from the second.
+Creates an `Interval` from two `Pitch` vectors by subtracting the first from the second.
 
 ## Common Queries
 
@@ -125,7 +125,7 @@ Predicate function that checks whether two `Interval` vectors are equal. Note th
 bool intervals_enharmonic(Interval m, Interval n, int edo);
 ```
 
-Predicate function that checks whether two `Note` vectors are enharmonics in a given EDO tuning system. The third parameter 'edo' is for passing in the tuning system to check against. So for example:
+Predicate function that checks whether two `Pitch` vectors are enharmonics in a given EDO tuning system. The third parameter `edo` is for passing in the tuning system to check against. So for example:
 
 ```c
 Interval m, n;
@@ -139,3 +139,48 @@ interval_from_name("p8", &n);
 intervals_enharmonic(m, n, 31); // true;
 intervals_enharmonic(m, n, 12); // false;
 ```
+
+## Transformations
+
+### `interval_negate`
+
+```c
+Interval interval_negate(Interval m);
+```
+
+Flips the direction of an `Interval`. Horizontally, an ascending major 3rd will become a descending major 3rd. Vertically, flipping an `Interval` represents voices swapping locations.
+
+Note: this is **not** the same as "inverting" an interval at the octave. That operation would be:
+
+```c
+interval_between((Pitch){-5, -2}, m);
+```
+
+### `intervals_add`
+
+```c
+Interval intervals_add(Interval m, Interval n);
+```
+
+Adds two `Interval` vectors to produce a new `Interval`. To take a difference $m - n$, prefer
+
+```c
+interval_between((Pitch) n, (Pitch) m);
+```
+
+over
+
+
+```c
+interval_add(m, interval_negate(n));
+```
+
+as it is faster.
+
+### `interval_simple`
+
+```c
+Interval interval_simple(Interval m);
+```
+
+Reduces an interval's size until it is smaller than an octave. This includes the octave, which is considered a compound unison here.

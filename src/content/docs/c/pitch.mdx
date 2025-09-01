@@ -1,0 +1,228 @@
+---
+title: Pitch
+description: Reference page for functions that create, transform or query Pitch vectors.
+sidebar:
+  order: 2
+---
+
+This page details all the functions that create, transform or query [`Pitch`](/c/types/#pitch) vectors.
+
+## Creating Pitches
+
+`Pitch` vectors can obviously be initialised directly:
+
+```c
+Pitch p = { 25, 10 }; // initialised to middle C
+```
+
+It's often more convenient, however, to be able to create a new `Pitch` from existing vectors, or to assign them values by parsing strings in accepted formats.
+
+### `pitch_from_spn`
+
+```c
+int pitch_from_spn(const char *s, Pitch *out);
+```
+
+Parses a `Pitch` from [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation). Outputs the `Pitch` via an out-param (you must pass in a pointer to a `Pitch`). Returns 1 if there is a parsing error.
+
+Safe usage if the string is being passed in dynamically:
+
+```c
+Pitch p;
+if (int pitch_from_spn(str, &p)) {
+    // handle parsing error
+}
+```
+
+## Common Queries
+
+These functions query commonly required information from `Pitch` vectors.
+
+### `pitch_chroma`
+
+```c
+int pitch_chroma(Pitch p);
+```
+
+Returns the number of perfect fifths (signed) separating a `Pitch` from C. Abstracts octave information away.
+
+### `pitch_letter`
+
+```c
+int pitch_letter(Pitch p);
+```
+
+Returns the _offset_ of a `Pitch`'s letter from 'A' / 'a'. It's up to you to add 'A' or 'a' to the result to get an actual character though!
+
+### `pitch_accidental`
+
+```c
+int pitch_accidental(Pitch p);
+```
+
+Returns a `Pitch`'s accidental as an offset from $\natural$, so:
+
+|                |     |
+| :------------: | :-: |
+| $\sharp\sharp$ |  2  |
+|    $\sharp$    |  1  |
+|   $\natural$   |  0  |
+|    $\flat$     | -1  |
+|  $\flat\flat$  | -2  |
+
+etc. for triple sharps/flats and beyond.
+
+### `pitch_octave`
+
+```c
+int pitch_octave(Pitch p);
+```
+
+Returns the [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) octave number of a `Pitch`. Middle C is 4.
+
+### `pitch_midi`
+
+```c
+int pitch_midi(Pitch p);
+```
+
+Returns the standard MIDI value for a given `Pitch`.
+
+### `pitches_equal`
+
+```c
+bool pitches_equal(Pitch p, Pitch q);
+```
+
+Predicate function that checks whether two `Pitch` vectors are equal. Pitch that it does **not** check whether they are enharmonically equivalent: they must literally represent the same pitch in [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) to return `true`.
+
+### `pitches_enharmonic`
+
+```c
+bool pitches_enharmonic(Pitch m, Pitch n, int edo);
+```
+
+Predicate function that checks whether two `Pitch` vectors are enharmonics in a given EDO tuning system. The third parameter 'edo' is for passing in the tuning system to check against. So for example:
+
+```c
+Pitch p, q;
+pitch_from_spn("C#4", &p);
+pitch_from_spn("Db4", &q);
+pitches_enharmonic(p, q, 12); // true; C# and Db are enharmonic in 12tet
+pitches_enharmonic(p, q, 31); // false; C# and Db are not enharmonic in 31tet
+
+pitch_from_spn("Gbb4", &p);
+pitch_from_spn("Ex4", &q);
+pitches_enharmonic(p, q, 31); // true; Gbb and Ex are enharmonic in 31tet
+pitches_enharmonic(p, q, 12); // false; Gbb and Ex are not enharmonic in 12tet
+```
+
+## Maps and Transformations
+
+### `transpose_real`
+
+```c
+Pitch transpose_real(Pitch p, Interval m);
+```
+
+This function takes a `Pitch` and an `Interval`, and returns a new `Pitch` formed by their sum.
+
+### `pitch_map_1d`
+
+```c
+int pitch_map_1d(Pitch p, Map1d T);
+```
+
+This function allows an arbitrary `Map1d` linear map to be applied to a `Pitch`, sending it to some integer. Allows things like:
+
+```c
+pitch_map_1d(p, ED31);
+```
+
+This would send any `Pitch` to a 31-tone equal temperament equivalent of MIDI numbering, such that:
+
+|   |                     |
+|:-:|:-------------------:|
+| 0 | $\sf{C}_{-1}$       |
+| 1 | $\sf{D}𝄫_{-1}$      |
+| 2 | $\sf{C}\sharp_{-1}$ |
+| 3 | $\sf{D}\flat_{-1}$  |
+| 4 | $\sf{C}𝄪_{-1}$      |
+| 5 | $\sf{D}_{-1}$       |
+| 6 | $\sf{E}𝄫_{-1}$      |
+
+*and so on...*
+
+### `pitch_map_2d`
+
+```c
+MappedVec pitch_map_2d(Pitch p, Map2d T);
+```
+
+This function allows an arbitrary `Map2d` linear map to be applied to a `Pitch`, essentially facilitating a [change of basis](https://en.wikipedia.org/wiki/Change_of_basis). The returned vector is therefore of a unique type: [`MappedVec`](/c/types/#mappedvec).
+
+This could be useful if working with generalised isomorphic keyboard layouts. For example, if reading numbers off a grid intended to represent a [Wicki-Hayden layout](https://en.wikipedia.org/wiki/Wicki%E2%80%93Hayden_pitch_layout), they could be parsed into Meantonal `Pitch` vectors simply:
+
+```c
+typedef struct {
+    int x, y;
+} Key;
+
+Pitch pitch_from_key(Key k) {
+    // casts becaues pitch_map_2d expects Pitch and returns MappedVec.
+    return (Pitch) pitch_map_2d((Pitch) k, WICKI_FROM);
+}
+```
+
+### `axis_create`
+
+```c
+MirrorAxis axis_create(Pitch p, Pitch q);
+```
+
+Creates a [`MirrorAxis`](/c/types/#mirroraxis) about which to invert a `Pitch` by adding two `Pitch` vectors together. To be used in conjunction with [`pitch_invert`](/c/pitch/#pitch_invert).
+
+### `axis_from_spn`
+
+```c
+int axis_from_spn(char *p_str, char *q_str, MirrorAxis *out);
+```
+
+Creates a [`MirrorAxis`](/c/types/#mirroraxis) about which to invert a `Pitch` by adding two `Pitch` vectors together. To be used in conjunction with [`pitch_invert`](/c/pitch/#pitch_invert).
+
+Unlike [`axis_create`](/c/pitch/#axis_create), `axis_from_spn` takes two pitch names as [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) *strings*, and returns the created `MirrorAxis` via a passed in pointer. Returns 1 if there is a parsing error.
+
+Safe usage if the strings are being passed in dynamically:
+
+```c
+MirrorAxis a;
+if (int axis_from_spn(str1, str2, &a)) {
+    // handle parsing error
+}
+
+```
+### `pitch_invert`
+
+```c
+Pitch pitch_invert(Pitch p, MirrorAxis a);
+```
+
+Invert a `Pitch` about a passed in `MirrorAxis`, returning a new `Pitch` (the result of subtracting `p` from `a`). Inversion is **real**, not **diatonic**.
+
+## Conversions
+
+### `pitch_to_standard`
+
+```c
+StandardPitch pitch_to_standard(Pitch p);
+```
+
+Converts from Meantonal's standard [`Pitch`](/c/types/#pitch) representation to the [`StandardPitch`](/c/types/#standardpitch) representation. Useful as a preliminary step to rendering standard notation.
+
+### `pitch_from_standard`
+
+```c
+Pitch pitch_from_standard(StandardPitch p);
+```
+
+Converts from the [`StandardPitch`](/c/types/#standardpitch) type back to a regular [`Pitch`](/c/types/#pitch) vector.
