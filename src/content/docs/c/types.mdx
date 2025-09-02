@@ -47,7 +47,7 @@ These types store information used by Meantonal to reconcile pitches against a g
 
 ### `enum Mode`
 
-Used with functions that operate on `Key`s.
+Used with functions that operate on a `Key`. Numbered in descending fifths, starting with Lydian as 0.
 
 ```c
 enum Mode {
@@ -62,10 +62,9 @@ enum Mode {
     MAJOR = IONIAN,
     MINOR = AEOLIAN
 };
-
 ```
 
-### Key
+### `Key`
 
 A key is a struct holding the "chroma" of a key (a proxy for letter name + accidental without an octave), and a mode.
 
@@ -75,6 +74,22 @@ typedef struct {
     enum Mode mode;
 } Key;
 ```
+
+### `enum Alteration`
+
+This enum communicates the alteration of scale degrees within a key, used with [`degree_alteration`](/c/key/#degree_alteration).
+
+```c
+enum Alteration {
+    FOREIGN_DEG_FLAT = -2,
+    LOWERED_DEG,
+    DIATONIC_DEG,
+    RAISED_DEG,
+    FOREIGN_DEG_SHARP
+};
+```
+
+`FOREIGN_DEG_FLAT` and `FOREIGN_DEG_SHARP` indicate notes that do not lie within the window of 17 perfect fifths Meantonal uses to define a key (that is, the note could not resolve by diatonic semitone to a natural degree within the key or mode).
 
 ## Map Types
 

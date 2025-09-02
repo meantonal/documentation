@@ -1,0 +1,39 @@
+---
+title: Tonality
+description: An explanation of Meantonal's model of keys and modes.
+sidebar:
+  order: 4
+---
+
+Meantonal has a very straightforward approach to "keys", "modes" and chromaticism.
+
+The basic principle is that a note like $\sf{A}\flat$ is the same pitch class regardless of tonal context, but in the key of $\sf{A}\flat$ major it _represents_ scale degree $\hat{1}$, whereas in a different key like $\sf{C}$ major it represents $\flat\hat{6}$. In some keys, like $\sf{C}\sharp$ major, it may not be clear that a note like $\sf{A}\flat$ has any business appearing at all, even as a chromatically altered scale degree.
+
+Simply put: a `Key` is a governing tonic note and diatonic scale. Modes are treated the same as major/minor "keys". For instance, a major scale on the Meantonal grid:
+
+|           |           |           |           |           |           |
+| :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
+|           |           |           |           |           | $\hat{1}$ |
+|           |           | $\hat{4}$ | $\hat{5}$ | $\hat{6}$ | $\hat{7}$ |
+| $\hat{1}$ | $\hat{2}$ | $\hat{3}$ |           |           |           |
+
+Each of the 7 natural scale degrees in a key or mode can also be approached by diatonic semitone from either side, producing a chromatic gamut of 17 notes:
+
+|                |                 |                 |                 |                 |                 |
+| :------------: | :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
+|                |                 | $\flat\hat{5}$  | $\flat\hat{6}$  | $\flat\hat{7}$  |    $\hat{1}$    |
+| $\flat\hat{2}$ | $\flat\hat{3}$  |    $\hat{4}$    |    $\hat{5}$    |    $\hat{6}$    |    $\hat{7}$    |
+|   $\hat{1}$    |    $\hat{2}$    |    $\hat{3}$    | $\sharp\hat{4}$ | $\sharp\hat{5}$ | $\sharp\hat{6}$ |
+|   $\hat{7}$    | $\sharp\hat{1}$ | $\sharp\hat{2}$ |                 |                 |                 |
+
+Conveniently, this collection of notes forms a single chain of 17 fifths that partitions neatly into lowered, diatonic and raised degrees:
+
+$\flat\hat{5}$ $\flat\hat{2}$ $\flat\hat{6}$ $\flat\hat{3}$ $\flat\hat{7}$ | $\hat{4}$ $\hat{1}$ $\hat{5}$ $\hat{2}$ $\hat{6}$ $\hat{3}$ $\hat{7}$ | $\sharp\hat{4}$ $\sharp\hat{1}$ $\sharp\hat{5}$ $\sharp\hat{2}$ $\sharp\hat{6}$ 
+
+For a different diatonic mode, the same chain of 17 fifths will result, but the scale degrees represented by these notes will be shifted left or right. Using Dorian as an example:
+
+$\flat\hat{4}$ $\flat\hat{1}$ $\flat\hat{5}$ $\flat\hat{2}$ $\flat\hat{6}$ | $\hat{3}$ $\hat{7}$ $\hat{4}$ $\hat{1}$ $\hat{5}$ $\hat{2}$ $\hat{6}$ | $\sharp\hat{3}$ $\sharp\hat{7}$ $\sharp\hat{4}$ $\sharp\hat{1}$ $\sharp\hat{5}$ 
+
+A key/mode is stored as a tonic and modal offset by which to construct the appropriate chain of fifths to reconcile pitches against into their corresponding scale degrees.
+
+Meantonal's model of chromaticism is based around the notion that raised and lowered versions of scale degrees primarily exist to approach other scale degrees by diatonic half step. Notes outside of the 17-fifths window defined above cannot resolve by diatonic semitone to natural scale degrees in the key, and are seen as therefore belonging to another key or mode.
