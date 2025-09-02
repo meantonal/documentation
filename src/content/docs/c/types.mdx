@@ -105,7 +105,7 @@ typedef struct {
 } Map1d;
 ```
 
-Multiplying a `Map1d` matrix with a `MapVec` via [`pitch_map_1d`](/c/map/map_to_1d) produces a single integer as the result.
+Multiplying a `Map1d` matrix with a `MapVec` via [`map_to_1d`](/c/map/#map_to_1d) produces a single integer as the result.
 
 Multiplying a $1\times2$ matrix with a 2d vector is equivalent to taking the dot product between two 2d vectors, so they can also be thought of as 2d vectors if you prefer.
 
@@ -121,11 +121,11 @@ typedef struct {
 } Map2d;
 ```
 
-Multiplying a `Map2d` matrix with a `Pitch` or `Interval` produces another 2d vector as the result, generally typed as `MapVec`.
+Multiplying a `Map2d` matrix with a `MapVec` via [`map_to_2d`](/c/map/#map_to_2d) produces another `MapVec`.
 
 ### `MapVec`
 
-The `MapVec` type exists to store the vectors used with a `Map1d` by [map_to_1d](/c/map/#map_to_1d) `Map2d` by [map_to_2d](/c/map/#map_to_2d).
+The `MapVec` type exists to store the vectors used with a `Map1d` by [map_to_1d](/c/map/#map_to_1d) and `Map2d` by [map_to_2d](/c/map/#map_to_2d).
 
 ```c
 typedef struct {
