@@ -11,13 +11,21 @@ Meantonal has a very straightforward approach to "keys", "modes" and chromaticis
 
 The basic principle is that a note like $\sf{A}\flat$ is the same pitch class regardless of tonal context, but in the key of $\sf{A}\flat$ major it _represents_ scale degree $\hat{1}$, whereas in a different key like $\sf{C}$ major it represents $\flat\hat{6}$. In some keys, like $\sf{C}\sharp$ major, it may not be clear that a note like $\sf{A}\flat$ has any business appearing at all, even as a chromatically altered scale degree.
 
-<Aside>
+<Aside type="tip" icon="information" title="Note">
 
 Simply put: a `Key` is a governing tonic note and diatonic scale. Modes are treated the same as major/minor "keys" in Meantonal.
 
 </Aside>
 
-For example, here's a major scale on the Meantonal grid:
+For example, here's a D major scale on the Meantonal grid (octaves are omitted):
+
+|          |          |                |          |          |                |
+| :------: | :------: | :------------: | :------: | :------: | :------------: |
+|          |          |                |          |          |    $\sf{D}$    |
+|          |          |    $\sf{G}$    | $\sf{A}$ | $\sf{B}$ | $\sf{C}\sharp$ |
+| $\sf{D}$ | $\sf{E}$ | $\sf{F}\sharp$ |          |          |                |
+
+These notes represent the following scale degrees in the key of D major:
 
 |           |           |           |           |           |           |
 | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |
@@ -25,7 +33,16 @@ For example, here's a major scale on the Meantonal grid:
 |           |           | $\hat{4}$ | $\hat{5}$ | $\hat{6}$ | $\hat{7}$ |
 | $\hat{1}$ | $\hat{2}$ | $\hat{3}$ |           |           |           |
 
-Each of the 7 natural scale degrees in a key or mode can also be approached by diatonic semitone from either side, producing a chromatic gamut of 17 notes:
+Each of the 7 natural scale degrees in a key or mode can also be approached by diatonic semitone from either side, so we can extend the above set to a chromatic gamut of 17 notes:
+
+|                |                |                |                |                |                |
+| :------------: | :------------: | :------------: | :------------: | :------------: | :------------: |
+|                |                | $\sf{A}\flat$  | $\sf{B}\flat$  |    $\sf{C}$    |    $\sf{D}$    |
+| $\sf{E}\flat$  |    $\sf{F}$    |    $\sf{G}$    |    $\sf{A}$    |    $\sf{B}$    | $\sf{C}\sharp$ |
+|    $\sf{D}$    |    $\sf{E}$    | $\sf{F}\sharp$ | $\sf{G}\sharp$ | $\sf{A}\sharp$ | $\sf{B}\sharp$ |
+| $\sf{C}\sharp$ | $\sf{D}\sharp$ | $\sf{E}\sharp$ |                |                |                |
+
+These notes represent the following diatonic and chromatically raised/lowered scale degrees in the key of D major:
 
 |                |                 |                 |                 |                 |                 |
 | :------------: | :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
@@ -36,11 +53,47 @@ Each of the 7 natural scale degrees in a key or mode can also be approached by d
 
 Conveniently, this collection of notes forms a single chain of 17 fifths that partitions neatly into lowered, diatonic and raised degrees:
 
-$\flat\hat{5}$ $\flat\hat{2}$ $\flat\hat{6}$ $\flat\hat{3}$ $\flat\hat{7}$ | $\hat{4}$ $\hat{1}$ $\hat{5}$ $\hat{2}$ $\hat{6}$ $\hat{3}$ $\hat{7}$ | $\sharp\hat{4}$ $\sharp\hat{1}$ $\sharp\hat{5}$ $\sharp\hat{2}$ $\sharp\hat{6}$ 
+$$
+\begin{array}{ c c c c c:c c c c c c c:c c c c c }
+\sf{A}\flat  & \sf{E}\flat  & \sf{B}\flat  & \sf{F}       & \sf{C}       &
+\sf{G} & \sf{D} & \sf{A} & \sf{E} & \sf{B} & \sf{F}\sharp & \sf{C}\sharp &
+\sf{G}\sharp & \sf{D}\sharp & \sf{A}\sharp & \sf{E}\sharp & \sf{B}\sharp \\
+\flat\hat{5} & \flat\hat{2} & \flat\hat{6} & \flat\hat{3} & \flat\hat{7} &
+\hat{4} & \hat{1} & \hat{5} & \hat{2} & \hat{6} & \hat{3} & \hat{7} &
+\sharp\hat{4} & \sharp\hat{1} & \sharp\hat{5} & \sharp\hat{2} & \sharp\hat{6}
+\end{array}
+$$
 
-For a different diatonic mode, the same chain of 17 fifths will result, but the scale degrees represented by these notes will be shifted left or right. Using Dorian as an example:
+For any relative diatonic modes like D major and E dorian, the same chain of 17 fifths will result, but the scale degrees represented by these notes will be shifted up or down by a constant offset. Here are the relative modes of D major organised in descending fifths from G lydian to C# locrian:
 
-$\flat\hat{4}$ $\flat\hat{1}$ $\flat\hat{5}$ $\flat\hat{2}$ $\flat\hat{6}$ | $\hat{3}$ $\hat{7}$ $\hat{4}$ $\hat{1}$ $\hat{5}$ $\hat{2}$ $\hat{6}$ | $\sharp\hat{3}$ $\sharp\hat{7}$ $\sharp\hat{4}$ $\sharp\hat{1}$ $\sharp\hat{5}$ 
+$$
+\begin{array}{ c c c c c:c c c c c c c:c c c c c }
+\sf{A}\flat  & \sf{E}\flat  & \sf{B}\flat  & \sf{F}       & \sf{C}       &
+\sf{G} & \sf{D} & \sf{A} & \sf{E} & \sf{B} & \sf{F}\sharp & \sf{C}\sharp &
+\sf{G}\sharp & \sf{D}\sharp & \sf{A}\sharp & \sf{E}\sharp & \sf{B}\sharp \\
+\flat\hat{2} & \flat\hat{6} & \flat\hat{3} & \flat\hat{7} & \flat\hat{4} &
+\hat{1} & \hat{5} & \hat{2} & \hat{6} & \hat{3} & \hat{7} & \hat{4} &
+\sharp\hat{1} & \sharp\hat{5} & \sharp\hat{2} & \sharp\hat{6} & \sharp\hat{3} \\
+\flat\hat{5} & \flat\hat{2} & \flat\hat{6} & \flat\hat{3} & \flat\hat{7} &
+\hat{4} & \hat{1} & \hat{5} & \hat{2} & \hat{6} & \hat{3} & \hat{7} &
+\sharp\hat{4} & \sharp\hat{1} & \sharp\hat{5} & \sharp\hat{2} & \sharp\hat{6} \\
+\flat\hat{1} & \flat\hat{5} & \flat\hat{2} & \flat\hat{6} & \flat\hat{3} &
+\hat{7} & \hat{4} & \hat{1} & \hat{5} & \hat{2} & \hat{6} & \hat{3} &
+\sharp\hat{7} & \sharp\hat{4} & \sharp\hat{1} & \sharp\hat{5} & \sharp\hat{2} \\
+\flat\hat{4} & \flat\hat{1} & \flat\hat{5} & \flat\hat{2} & \flat\hat{6} &
+\hat{3} & \hat{7} & \hat{4} & \hat{1} & \hat{5} & \hat{2} & \hat{6} &
+\sharp\hat{3} & \sharp\hat{7} & \sharp\hat{4} & \sharp\hat{1} & \sharp\hat{5} \\
+\flat{7} & \flat\hat{4} & \flat\hat{1} & \flat\hat{5} & \flat\hat{2} &
+\hat{6} & \hat{3} & \hat{7} & \hat{4} & \hat{1} & \hat{5} & \hat{2} &
+\sharp\hat{6} & \sharp\hat{3} & \sharp\hat{7} & \sharp\hat{4} & \sharp\hat{1} \\
+\flat{3} & \flat{7} & \flat\hat{4} & \flat\hat{1} & \flat\hat{5} &
+\hat{2} & \hat{6} & \hat{3} & \hat{7} & \hat{4} & \hat{1} & \hat{5} &
+\sharp\hat{2} & \sharp\hat{6} & \sharp\hat{3} & \sharp\hat{7} & \sharp\hat{4} \\
+\flat{6} & \flat{3} & \flat{7} & \flat\hat{4} & \flat\hat{1} &
+\hat{5} & \hat{2} & \hat{6} & \hat{3} & \hat{7} & \hat{4} & \hat{1} &
+\sharp\hat{5} & \sharp\hat{2} & \sharp\hat{6} & \sharp\hat{3} & \sharp\hat{7} \\
+\end{array}
+$$
 
 A key/mode is stored as a tonic and modal offset by which to construct the appropriate chain of fifths to reconcile pitches against into their corresponding scale degrees.
 
