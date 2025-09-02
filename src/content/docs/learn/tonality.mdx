@@ -5,11 +5,19 @@ sidebar:
   order: 4
 ---
 
+import { Aside } from '@astrojs/starlight/components';
+
 Meantonal has a very straightforward approach to "keys", "modes" and chromaticism.
 
 The basic principle is that a note like $\sf{A}\flat$ is the same pitch class regardless of tonal context, but in the key of $\sf{A}\flat$ major it _represents_ scale degree $\hat{1}$, whereas in a different key like $\sf{C}$ major it represents $\flat\hat{6}$. In some keys, like $\sf{C}\sharp$ major, it may not be clear that a note like $\sf{A}\flat$ has any business appearing at all, even as a chromatically altered scale degree.
 
-Simply put: a `Key` is a governing tonic note and diatonic scale. Modes are treated the same as major/minor "keys". For instance, a major scale on the Meantonal grid:
+<Aside>
+
+Simply put: a `Key` is a governing tonic note and diatonic scale. Modes are treated the same as major/minor "keys" in Meantonal.
+
+</Aside>
+
+For example, here's a major scale on the Meantonal grid:
 
 |           |           |           |           |           |           |
 | :-------: | :-------: | :-------: | :-------: | :-------: | :-------: |

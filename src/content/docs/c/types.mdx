@@ -5,6 +5,8 @@ sidebar:
   order: 0
 ---
 
+import { Aside } from '@astrojs/starlight/components';
+
 ## Primitive Types
 
 The two most fundamental types in Meantonal are `Pitch` and `Interval`, so let's begin by defining them.
@@ -39,7 +41,11 @@ typedef struct {
 
 The `Pitch` and `Interval` type are effectively identical, and one can even be cast to the other. They are distinct because they generally represent different things. An `Interval` describes the distance *between* two `Pitch` vectors.
 
+<Aside>
+
 Check the [Pitches](/learn/pitch) and [Intervals](/learn/intervals) pages in the Learn category for an explanation of what these representations mean mathematically, and how they're constructed.
+
+</Aside>
 
 ## Key types
 
@@ -151,7 +157,7 @@ Created by [`axis_create`](/c/pitch/#axis_create) or [`axis_from_spn`](/c/pitch/
 
 ## Alternative Representations
 
-The following types store alternative representations of `Pitch` and `Interval` vectors. They correspond more closely with natural language, and can therefore potentially be useful as:
+The following types store alternative representations of pitch data. They correspond more closely with natural language, and can therefore potentially be useful as:
 - An intermediate type on the way to pretty printing information about a group of musical objects to the end user.
 - An intermediate type on the way to rendering standard notation.
 - An intermediate parsing target from plaintext before converting into `Pitch` or `Interval` vectors.
