@@ -19,7 +19,7 @@ In order to define a `TonalContext`, you need a way to specify the tonic, along 
 int context_from_str(char *s, enum Mode mode, TonalContext *out);
 ```
 
-This function allows you to initialise a `TonalContext` from a note name as a string. the created context is returned via an out-param (you must pass in a pointer to a `TonalContext`). Returns 1 if there is a parsing error.
+This function allows you to initialise a `TonalContext` from a note name as a string. The created context is returned via an out-param (you must pass in a pointer to a `TonalContext`). Returns 1 if there is a parsing error.
 
 Safe usage if the string is being passed in dynamically:
 
