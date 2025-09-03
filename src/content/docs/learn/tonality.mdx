@@ -17,7 +17,9 @@ Simply put: a `Key` is a governing tonic note and diatonic scale. Modes are trea
 
 </Aside>
 
-For example, here's a D major scale on the Meantonal grid (octaves are omitted):
+## The Tonal Context
+
+Let's construct a simple context where notes represent scale degrees in the key of "D major". Here's a D major scale on the Meantonal grid (octaves are omitted):
 
 |          |          |                |          |          |                |
 | :------: | :------: | :------------: | :------: | :------: | :------------: |
@@ -95,6 +97,138 @@ $$
 \end{array}
 $$
 
-A key/mode is stored as a tonic and modal offset by which to construct the appropriate chain of fifths to reconcile pitches against into their corresponding scale degrees.
+A tonal context is entirely determined by a tonic and modal offset by which to construct the appropriate chain of fifths, against which we can reconcile pitches into their corresponding scale degrees.
+
+<Aside type="tip" icon="information" title="Note">
 
 Meantonal's model of chromaticism is based around the notion that raised and lowered versions of scale degrees primarily exist to approach other scale degrees by diatonic half step. Notes outside of the 17-fifths window defined above cannot resolve by diatonic semitone to natural scale degrees in the key, and are seen as therefore belonging to another key or mode.
+
+</Aside>
+
+## Reconciling Pitches
+
+So let's say we have a note like $\sf{E}_4$, represented by the `Pitch` vector $(27, 10)$. How do we reconcile it against a tonal context of "D major"? First, let's introduce a convenient function: the **chroma** function.
+
+### The Chroma Function
+
+We define the $Chroma$ function as a linear map:
+
+$$
+Chroma(p) = [2, -5]p
+$$
+
+Simply put, $Chroma(p)$ sends a `Pitch` vector $p$ to a number, which represents the number of fifths (signed) separating it from $\sf{C}$. It abstracts away octave information, which you can see by the fact $(5, 2)$ is in the null space of the above matrix, so $\sf{E}_4$, $\sf{E}_5$, $\sf{E}_6$ etc. are all sent to the same pitch chroma, namely 4.
+
+If we take the chroma of all the pitches found in the previous table, we get the following:
+
+$$
+\begin{array}{ c c c c c:c c c c c c c:c c c c c }
+\sf{A}\flat  & \sf{E}\flat  & \sf{B}\flat  & \sf{F}       & \sf{C}       &
+\sf{G} & \sf{D} & \sf{A} & \sf{E} & \sf{B} & \sf{F}\sharp & \sf{C}\sharp &
+\sf{G}\sharp & \sf{D}\sharp & \sf{A}\sharp & \sf{E}\sharp & \sf{B}\sharp \\
+-4 & -3 & -2 & -1 & 0 &
+1 & 2 & 3 & 4 & 5 & 6 & 7 &
+8 & 9 & 10 & 11 & 12
+\end{array}
+$$
+
+The chroma of our tonic D is 2, so we can normalise the above to reflect this by subtracting 2 from each value, by defining a new function $KeyChroma$ as follows:
+
+$$
+KeyChroma(p) = Chroma(p) - Chroma(t)
+$$
+
+Where $t$ is the tonic.
+
+$$
+\begin{array}{ c c c c c:c c c c c c c:c c c c c }
+\sf{A}\flat  & \sf{E}\flat  & \sf{B}\flat  & \sf{F}       & \sf{C}       &
+\sf{G} & \sf{D} & \sf{A} & \sf{E} & \sf{B} & \sf{F}\sharp & \sf{C}\sharp &
+\sf{G}\sharp & \sf{D}\sharp & \sf{A}\sharp & \sf{E}\sharp & \sf{B}\sharp \\
+-6 & -5 & -4 & -3 & -2 &
+-1 & 0 & 1 & 2 & 3 & 4 & 5 &
+6 & 7 & 8 & 9 & 10
+\end{array}
+$$
+
+This doesn't yet account for the chosen mode ("major"): We will now add the mode as an offset from Lydian as follows:
+
+|               |     |
+| :-----------: | :-: |
+|    Lydian     |  0  |
+| Ionian/Major  |  1  |
+|  Mixolydian   |  2  |
+|    Dorian     |  3  |
+| Aeolian/Minor |  4  |
+|   Phrygian    |  5  |
+|    Locrian    |  6  |
+
+Let's update our definition of $KeyChroma$ to reflect this:
+
+$$
+KeyChroma(p) = Chroma(p) - Chroma(t) + M
+$$
+
+Where M is the modal offset. Our table now looks like this:
+
+$$
+\begin{array}{ c c c c c:c c c c c c c:c c c c c }
+\sf{A}\flat  & \sf{E}\flat  & \sf{B}\flat  & \sf{F}       & \sf{C}       &
+\sf{G} & \sf{D} & \sf{A} & \sf{E} & \sf{B} & \sf{F}\sharp & \sf{C}\sharp &
+\sf{G}\sharp & \sf{D}\sharp & \sf{A}\sharp & \sf{E}\sharp & \sf{B}\sharp \\
+-5 & -4 & -3 & -2 & -1 &
+0 & 1 & 2 & 3 & 4 & 5 & 6 &
+7 & 8 & 9 & 10 & 11
+\end{array}
+$$
+
+Notes whose $KeyChroma$ in the given tonal context is below $-5$ or above $11$ cannot resolve by diatonic semitone to diatonic degrees, and are seen to be incompatible with that context (as in, they require modulation to gain a sensible reading).
+
+If we now carry out floored division by 7, the above table tells us whether a given note is natural, raised or lowered in the key:
+
+$$
+\begin{array}{ c c c c c:c c c c c c c:c c c c c }
+\sf{A}\flat  & \sf{E}\flat  & \sf{B}\flat  & \sf{F}       & \sf{C}       &
+\sf{G} & \sf{D} & \sf{A} & \sf{E} & \sf{B} & \sf{F}\sharp & \sf{C}\sharp &
+\sf{G}\sharp & \sf{D}\sharp & \sf{A}\sharp & \sf{E}\sharp & \sf{B}\sharp \\
+-1 & -1 & -1 & -1 & -1 &
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 
+1 & 1 & 1 & 1 & 1 &
+\end{array}
+$$
+
+### Degree
+
+So we know whether a degree is diatonic, raised, lowered, or foreign to a given key. But we still don't have a way to know *what degree it actually represents*.
+
+This *could* be ascertained by taking our original definition of $KeyChroma$ without worrying about modal offset, multiplying each note's $KeyChroma$ by 4 and then taking floored remainders modulo 7:
+
+$$
+\begin{array}{ c c c c c:c c c c c c c:c c c c c }
+\sf{A}\flat  & \sf{E}\flat  & \sf{B}\flat  & \sf{F}       & \sf{C}       &
+\sf{G} & \sf{D} & \sf{A} & \sf{E} & \sf{B} & \sf{F}\sharp & \sf{C}\sharp &
+\sf{G}\sharp & \sf{D}\sharp & \sf{A}\sharp & \sf{E}\sharp & \sf{B}\sharp \\
+4 & 1 & 5 & 2 & 6 &
+3 & 0 & 4 & 1 & 5 & 2 & 6 &
+3 & 0 & 4 & 1 & 5
+\end{array}
+$$
+
+This gives correctly ordered scale degree numbering, indexed from 0 rather than 1.
+
+It is, however, easier to simply keep a record of the letter name of the tonic as an offset from C:
+
+|     |     |     |     |     |     |     |
+| :-: | :-: | :-: | :-: | :-: | :-: | :-: |
+|  C  |  D  |  E  |  F  |  G  |  A  |  B  |
+|  0  |  1  |  2  |  3  |  4  |  5  |  6  |
+
+This value can be found for any note by adding its coordinates modulo 7, or from the floored remainder of $Chroma(p)\div 7$
+
+Now all we have to do to ascertain the scale degree an arbitrary note represents is add its coordinates together and subtract the offset from the previous step, modulo 7:
+
+$$
+\sf{E}_4 = (27, 10) \rightarrow 27 + 10 - 1 = 1\;\sf{(mod\;7)}
+$$
+
+We correctly arrive at E as degree 1 in D major (remember, these calculations produce 0-indexed scale degrees).
