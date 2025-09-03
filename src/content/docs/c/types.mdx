@@ -47,13 +47,13 @@ Check the [Pitches](/learn/pitch) and [Intervals](/learn/intervals) pages in the
 
 </Aside>
 
-## Key types
+## Tonal types
 
 These types store information used by Meantonal to reconcile pitches against a governing key or mode.
 
 ### `enum Mode`
 
-Used with functions that operate on a `Key`. Numbered in descending fifths, starting with Lydian as 0.
+Used with functions that operate on a `TonalContext`. Numbered in descending fifths, starting with Lydian as 0.
 
 ```c
 enum Mode {
@@ -70,15 +70,22 @@ enum Mode {
 };
 ```
 
-### `Key`
+### `TonalContext`
 
-A key is a struct holding the "chroma" of a key (a proxy for letter name + accidental without an octave), and a mode.
+A `TonalContext` is a struct holding data about the governing "key" or "mode".
 
 ```c
 typedef struct {
-    int chroma;
+    struct {
+        int letter;
+        int accidental;
+    } tonic;
     enum Mode mode;
-} Key;
+    struct {
+        int chroma;
+        int letter;
+    } offset; // offsets used by internal functions to reconcile notes.
+} TonalContext;
 ```
 
 ### `enum Alteration`
@@ -95,7 +102,7 @@ enum Alteration {
 };
 ```
 
-`FOREIGN_DEG_FLAT` and `FOREIGN_DEG_SHARP` indicate notes that do not lie within the window of 17 perfect fifths Meantonal uses to define a key (that is, the note could not resolve by diatonic semitone to a natural degree within the key or mode).
+`FOREIGN_DEG_FLAT` and `FOREIGN_DEG_SHARP` indicate notes that do not lie within the [window of 17 perfect fifths](/learn/tonality/#the-tonal-context) Meantonal uses to define a `TonalContext` (that is, the note could not resolve by diatonic semitone to a natural degree within the key or mode).
 
 ## Map Types
 
