@@ -50,11 +50,21 @@ typedef struct {
         int accidental;
     } tonic;
     enum Mode mode;
-    struct {
-        int chroma;
-        int letter;
-    } offset; // offsets used by internal functions to reconcile notes.
+    int chroma_offset; // offset used by internal functions to reconcile notes.
 } TonalContext;
+
+/**
+ * Enum for indicating scale degrees (0-indexed) by their functional names.
+ */
+enum Degree {
+    TONIC,
+    SUPERTONIC,
+    MEDIANT,
+    SUBDOMINANT,
+    DOMINANT,
+    SUBMEDIANT,
+    SUBTONIC
+};
 
 /**
  * Enum for indicating the alteration of scale degrees within a key or mode.
@@ -126,6 +136,12 @@ extern const Map2d WICKI_TO, WICKI_FROM, GENERATORS_TO, GENERATORS_FROM;
 int pitch_from_spn(const char *s, Pitch *out);
 
 /**
+ * Creates a Pitch vector from a specified chroma (signed distance from C in
+ * 5ths) and octave (following SPN octave numbering).
+ */
+Pitch pitch_from_chroma(int chroma, int octave);
+
+/**
  * @brief
  * The number of perfect fifths separating a Pitch from C.
  * Abstracts octave information away.
@@ -137,7 +153,9 @@ static inline int pitch_chroma(Pitch p) { return 2 * p.w - 5 * p.h; }
  * Returns the letter number of a Pitch.
  * To convert to an actual letter, just add 'a' or 'A'.
  */
-static inline int pitch_letter(Pitch p) { return (p.w + p.h + 2) % 7; }
+static inline int pitch_letter(Pitch p) {
+    return ((p.w + p.h + 2) % 7 + 7) % 7;
+}
 
 /**
  * @brief
@@ -367,13 +385,61 @@ static inline Interval interval_simple(Interval m) {
     return m;
 }
 
+/**
+ * Creates a TonalContext from a string naming the pitch class (e.g. "Ab"), and
+ * a Mode (e.g. DORIAN).
+ * @param out
+ * Pointer to a TonalContext to store the resulting data.
+ * @return
+ * 0 means nothing went wrong.
+ */
 int context_from_str(char *s, enum Mode mode, TonalContext *out);
 
-static inline int degree_number(Pitch p, TonalContext key) {
-    return ((p.w + p.h - key.offset.letter) % 7 + 7) % 7;
+/**
+ * Creates a TonalContext from a specified chroma (signed distance in 5ths from
+ * C) and Mode.
+ */
+TonalContext context_from_chroma(int chroma, enum Mode mode);
+
+/**
+ * Creates a TonalContext from a passed in Pitch vector and specified Mode.
+ */
+TonalContext context_from_pitch(Pitch p, enum Mode mode);
+
+/**
+ * Returns the degree number represented by the given Pitch in the given
+ * TonalContext, 0-indexed so the tonic is 0.
+ */
+static inline enum Degree degree_number(Pitch p, TonalContext key) {
+    return (enum Degree)(((p.w + p.h - key.tonic.letter + 2) % 7 + 7) % 7);
 }
 
+/**
+ * 0 is diatonic
+ * 1/-1 is raised/lowered
+ * 2/-2 is too sharp/too flat to function in the specified key.
+ */
 enum Alteration degree_alteration(Pitch p, TonalContext key);
+
+/**
+ * Returns the chroma of the diatonic version of the given degree in the given
+ * TonalContext.
+ */
+static inline int degree_chroma(enum Degree degree, TonalContext key) {
+    return (degree * 2 + key.mode) % 7 - key.chroma_offset;
+}
+
+/**
+ * Snaps a given pitch to the version of that letter diatonic in the given
+ * TonalContext.
+ */
+Pitch snap_diatonic(Pitch p, TonalContext key);
+
+/**
+ * Transpose a Pitch by a generic interval to a note diatonic in the given
+ * TonalContext.
+ */
+Pitch transpose_diatonic(Pitch p, int interval, TonalContext key);
 
 /**
  * Maps to an integer using a 1x2 matrix.
@@ -419,13 +485,6 @@ const Map2d GENERATORS_FROM = {3, 5, 1, 2};
 static const Pitch letters[7] = {
     {4, 1}, {5, 1}, {0, 0}, {1, 0}, {2, 0}, {2, 1}, {3, 1},
 };
-
-Pitch pitch_from_standard(StandardPitch p) {
-    return (Pitch){
-        .w = letters[p.letter].w + 5 * p.octave + p.accidental,
-        .h = letters[p.letter].h + 2 * p.octave - p.accidental,
-    };
-}
 
 int pitch_from_spn(const char *s, Pitch *out) {
     const char *p = s;
@@ -474,6 +533,28 @@ int pitch_from_spn(const char *s, Pitch *out) {
     out->h += (int)oct * 2;
 
     return 0;
+}
+
+Pitch pitch_from_chroma(int chroma, int octave) {
+    Pitch p = {0, 0};
+    p.w += chroma * 3;
+    p.h += chroma;
+    while (pitch_octave(p) > octave) {
+        p.w -= 5;
+        p.h -= 2;
+    }
+    while (pitch_octave(p) < octave) {
+        p.w += 5;
+        p.h += 2;
+    }
+    return p;
+}
+
+Pitch pitch_from_standard(StandardPitch p) {
+    return (Pitch){
+        .w = letters[p.letter].w + 5 * p.octave + p.accidental,
+        .h = letters[p.letter].h + 2 * p.octave - p.accidental,
+    };
 }
 
 static const Interval major_ints[7] = {
@@ -592,14 +673,35 @@ int context_from_str(char *s, enum Mode mode, TonalContext *out) {
     out->tonic.letter = letter;
     out->tonic.accidental = acc;
     out->mode = mode;
-    out->offset.chroma = mode - chroma;
-    out->offset.letter = letter - 2;
+    out->chroma_offset = mode - chroma;
 
     return 0;
 }
 
+TonalContext context_from_chroma(int chroma, enum Mode mode) {
+    TonalContext out;
+
+    out.mode = mode;
+    out.chroma_offset = mode - chroma;
+    out.tonic.letter = (chroma * 4 % 7 + 9) % 7;
+    out.tonic.accidental = ++chroma < 0 ? chroma / 7 - 1 : chroma / 7;
+
+    return out;
+}
+
+TonalContext context_from_pitch(Pitch p, enum Mode mode) {
+    TonalContext out;
+
+    out.tonic.letter = pitch_letter(p);
+    out.tonic.accidental = pitch_accidental(p);
+    out.mode = mode;
+    out.chroma_offset = mode - pitch_chroma(p);
+
+    return out;
+}
+
 enum Alteration degree_alteration(Pitch p, TonalContext key) {
-    int x = pitch_chroma(p) + key.offset.chroma;
+    int x = pitch_chroma(p) + key.chroma_offset;
     if (0 <= x && x < 7)
         return DIATONIC_DEG;
     if (7 <= x && x < 12)
@@ -609,5 +711,22 @@ enum Alteration degree_alteration(Pitch p, TonalContext key) {
     if (x < -5)
         return FOREIGN_DEG_FLAT;
     return FOREIGN_DEG_SHARP;
+}
+
+Pitch snap_diatonic(Pitch p, TonalContext key) {
+    while (degree_alteration(p, key) > DIATONIC_DEG) {
+        p.w--;
+        p.h++;
+    }
+    while (degree_alteration(p, key) < DIATONIC_DEG) {
+        p.w++;
+        p.h--;
+    }
+
+    return p;
+}
+
+Pitch transpose_diatonic(Pitch p, int interval, TonalContext key) {
+    return snap_diatonic(transpose_real(p, (Interval){interval, 0}), key);
 }
 #endif // MEANTONAL

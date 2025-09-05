@@ -36,6 +36,14 @@ if (int pitch_from_spn(str, &p)) {
 }
 ```
 
+### `pitch_from_chroma`
+
+```c
+Pitch pitch_from_chroma(int chroma, int octave);
+```
+
+Creates a `Pitch` vector from a specified chroma (signed distance from C in 5ths) and octave (following [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) numbering).
+
 ## Common Queries
 
 These functions query commonly required information from `Pitch` vectors.

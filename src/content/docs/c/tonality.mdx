@@ -13,13 +13,13 @@ This page details all the functions that create `TonalContext` objects, query [`
 
 In order to define a `TonalContext`, you need a way to specify the tonic, along with the [`mode`](/c/types/#enum-mode).
 
-### context_from_str
+### `context_from_str`
 
 ```c
 int context_from_str(char *s, enum Mode mode, TonalContext *out);
 ```
 
-This function allows you to initialise a `TonalContext` from a note name as a string. The created context is returned via an out-param (you must pass in a pointer to a `TonalContext`). Returns 1 if there is a parsing error.
+This function allows you to initialise a `TonalContext` from a note name as a string, and a `Mode` enum value. The created context is returned via an out-param (you must pass in a pointer to a `TonalContext`). Returns 1 if there is a parsing error.
 
 Safe usage if the string is being passed in dynamically:
 
@@ -29,6 +29,22 @@ if (int context_from_str(str, &key)) {
     // handle parsing error
 }
 ```
+
+### `context_from_chroma`
+
+```c
+TonalContext context_from_chroma(int chroma, enum Mode mode);
+```
+
+This function allows you to initialise a `TonalContext` from a chroma number (signed distance from C measured in 5ths), and a `Mode` enum value.
+
+### `context_from_pitch`
+
+```c
+TonalContext context_from_pitch(Pitch p, enum Mode mode);
+```
+
+This function allows you to initialise a `TonalContext` from a `Pitch` vector and a `Mode` enum value.
 
 ## Common Queries
 
@@ -55,3 +71,29 @@ Compare return values against the [`enum Alteration`](/c/types/#enum-alteration)
 <Aside type="caution">
 Remember to check for both `FOREIGN_DEG_SHARP` and `FOREIGN_DEG_FLAT` returns from this function: a `Pitch` can lie outside the governing key/mode in both directions.
 </Aside>
+
+### `degree_chroma`
+
+```c
+static inline int degree_chroma(enum Degree degree, TonalContext key);
+```
+
+Produces the chroma (signed distance from C measured in 5ths) of the diatonic version of the specified degree in the passed-in `TonalContext`.
+
+## Transformations
+
+### `snap_diatonic`
+
+```c
+Pitch snap_diatonic(Pitch p, TonalContext key);
+```
+
+Adjusts a `Pitch` to its diatonic version in the passed in `TonalContext`.
+
+### `transpose_diatonic`
+
+```c
+Pitch transpose_diatonic(Pitch p, int interval, TonalContext key);
+```
+
+Transposes a `Pitch` by a *generic* interval. The resulting `Pitch` will always be diatonic in the passed in `TonalContext`.

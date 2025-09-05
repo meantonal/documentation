@@ -9,7 +9,7 @@ import { Aside } from '@astrojs/starlight/components';
 
 ## Primitive Types
 
-The two most fundamental types in Meantonal are `Pitch` and `Interval`, so let's begin by defining them.
+The most fundamental types in Meantonal are `Pitch` and `Interval`, both of which represent 2d vectors.
 
 ### `Pitch`
 
@@ -49,11 +49,11 @@ Check the [Pitches](/learn/pitch) and [Intervals](/learn/intervals) pages in the
 
 ## Tonal types
 
-These types store information used by Meantonal to reconcile pitches against a governing key or mode.
+These types encode the information needed to represent a governing "key" or "mode", and perform *diatonic operations and queries* within that context.
 
 ### `enum Mode`
 
-Used with functions that operate on a `TonalContext`. Numbered in descending fifths, starting with Lydian as 0.
+Used when defining a `TonalContext`. Numbered in descending fifths, starting with Lydian as 0.
 
 ```c
 enum Mode {
@@ -81,11 +81,24 @@ typedef struct {
         int accidental;
     } tonic;
     enum Mode mode;
-    struct {
-        int chroma;
-        int letter;
-    } offset; // offsets used by internal functions to reconcile notes.
+    int chroma_offset; // offset used by internal functions to reconcile notes.
 } TonalContext;
+```
+
+### `enum Degree`
+
+This enum allows scale degrees (0-indexed so TONIC is 0) to be specified by their functional names. Used by [`degree_number`](/c/tonality/#degree_number) and [`degree_chroma`](/c/tonality/#degree_chroma).
+
+```c
+enum Degree {
+    TONIC,
+    SUPERTONIC,
+    MEDIANT,
+    SUBDOMINANT,
+    DOMINANT,
+    SUBMEDIANT,
+    SUBTONIC
+};
 ```
 
 ### `enum Alteration`
