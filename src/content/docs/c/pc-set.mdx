@@ -1,0 +1,76 @@
+---
+title: Sets
+description: Reference page for the generic pitch class sets and functions that manipulate them.
+sidebar:
+  order: 5
+---
+
+This page details functions that build and operate on the generic `PitchClassSet`, where a "pitch class" is taken to mean any unique letter name + accidental combination (so $\sf{D}\flat$ and $\sf{C}\sharp$ are not the same pitch class in meantonal, even if they are equivalent in the more common 12-tone pitch class sets).
+
+## Managing a PitchClassSet
+
+You should begin by manually initialising a `PitchClassSet` to `NULL`:
+
+```c
+PitchClassSet s = NULL;
+```
+
+### `pc_set_destroy`
+
+You are responsible for freeing up the memory allocated to a `PitchClassSet` when you are done using `pc_set_destroy`:
+
+```c
+void pc_set_destroy(PitchClassSet set);
+```
+
+### `pc_set_insert`
+
+```c
+PitchClassSet pc_set_insert(PitchClassSet set, int chroma);
+```
+
+To add a pitch class to a set, pass its [chroma](/c/pitch/#pitch_chroma) to `pc_set_insert`;
+
+```c
+PitchClassSet s = NULL;
+s = pc_set_insert(s, 3); // adds "A" to the set
+```
+
+## Common Queries
+
+### `pc_set_contains`
+
+```c
+bool pc_set_contains(PitchClassSet set, int chroma);
+```
+
+Predicate function that checks whether the specified chroma is an element of the passed in `PitchClassSet`.
+
+## Transformations
+
+### `pc_set_transpose`
+
+```c
+PitchClassSet pc_set_transpose(PitchClassSet set, int offset);
+```
+
+Returns a copy of the passed in set with each element transposed by the given chroma offset.
+
+### `pc_set_invert`
+
+```c
+PitchClassSet pc_set_invert(PitchClassSet set, int axis);
+```
+
+Returns a copy of the passed in set with each element inverted about the passed in chroma axis. Taking the [`pitch_chroma`](/c/pitch/#pitch_chroma) of a regular [`MirrorAxis`](/c/types/#mirroraxis) works for a second argument with this function:
+
+```c
+PitchClassSet s = NULL;
+
+// ...
+
+MirrorAxis axis;
+axis_from_spn("C4", "G4", &axis);
+
+PitchClassSet s_flip = pc_set_invert(s, pitch_chroma((Pitch) axis));
+```

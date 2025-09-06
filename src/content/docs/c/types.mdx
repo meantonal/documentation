@@ -117,6 +117,22 @@ enum Alteration {
 
 `FOREIGN_DEG_FLAT` and `FOREIGN_DEG_SHARP` indicate notes that do not lie within the [window of 17 perfect fifths](/learn/tonality/#the-tonal-context) Meantonal uses to define a `TonalContext` (that is, the note could not resolve by diatonic semitone to a natural degree within the key or mode).
 
+## Set Types
+
+### `PitchClassSet`
+
+The `PitchClassSet` is an abstract data type used by functions beginning with [`pc_set_`](/c/pc-set) to store, query and manipulate arbitrary sets of pitch classes. Classes are stored in terms of "chroma", the signed distance of a note from C in fifths.
+
+```c
+typedef struct tnode *PitchClassSet;
+```
+
+<Aside type="caution">
+
+You are responsible for calling [`pc_set_destroy`](/c/pc-set/#pc_set_destroy) to free up any memory allocated to a `PitchClassSet` when you are finished with it.
+
+</Aside>
+
 ## Map Types
 
 These types include mapping matrices for linear mapping operations and a special vector type to store the result of applying 2-dimensional maps.
