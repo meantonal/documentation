@@ -27,19 +27,16 @@ typedef struct {
 
 ### `Interval`
 
-An `Interval` is a struct with two members, `w` and `h`.
+An `Interval` is a struct with two members, `w` and `h`. Strictly speaking, it's just an alias of `Pitch`.
 
 ```c
-typedef struct {
-    int w; // whole steps
-    int h; // half steps
-} Interval;
+typedef Pitch Interval;
 ```
 
 - `w` holds the number of whole steps from the unison.
 - `h` holds the number of half steps from the unison.
 
-The `Pitch` and `Interval` type are effectively identical, and one can even be cast to the other. They are distinct because they generally represent different things. An `Interval` describes the distance *between* two `Pitch` vectors.
+Since the `Pitch` and `Interval` type are identical, they can be cast between each other. They are distinct because they generally represent different things. An `Interval` describes the distance *between* two `Pitch` vectors.
 
 <Aside type="tip" icon="information" title="Note">
 
@@ -167,27 +164,19 @@ Multiplying a `Map2d` matrix with a `MapVec` via [`map_to_2d`](/c/map/#map_to_2d
 
 ### `MapVec`
 
-The `MapVec` type exists to store the vectors used with a `Map1d` by [map_to_1d](/c/map/#map_to_1d) and `Map2d` by [map_to_2d](/c/map/#map_to_2d).
+The `MapVec` type exists to store the vectors used with a `Map1d` by [map_to_1d](/c/map/#map_to_1d) and `Map2d` by [map_to_2d](/c/map/#map_to_2d). Internally they are an alias for `Pitch`, much like `Interval` and `MirrorAxis`.
 
 ```c
-typedef struct {
-    int x;
-    int y;
-} MapVec;
+typedef Pitch MapVec;
 ```
 
 ### `MirrorAxis`
 
-The `MirrorAxis` type is to do with a different kind of mapping operation: pitch inversion about a fixed axis.
+The `MirrorAxis` type is to do with a different kind of mapping operation: pitch inversion about a fixed axis. Like `Interval` and `MapVec`, it is an alias of the `Pitch` struct type.
 
 ```c
-typedef struct {
-    int w;
-    int h;
-} MirrorAxis;
+typedef Pitch MirrorAxis;
 ```
-
-Slightly misleadingly, it looks like a regular `Pitch` or `Interval`, but this is strictly a result of how the inversion is applied.
 
 Created by [`axis_create`](/c/pitch/#axis_create) or [`axis_from_spn`](/c/pitch/#axis_from_spn). Used with [`pitch_invert`](/c/pitch/#pitch_invert).
 
