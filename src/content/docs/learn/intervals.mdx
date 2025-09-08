@@ -30,13 +30,10 @@ If $m$ is a *vertical* interval, $-m$ represents the same interval with the part
 
 </Aside>
 
-Internally, the [`Interval`](/c/types/#interval) type is a struct identical to the `Pitch` type:
+Internally, the [`Interval`](/c/types/#interval) type is a struct identical to the [`Pitch`](/c/types/#pitch) type, and is defined as an alias of `Pitch`:
 
 ```c
-typedef struct {
-    int w;
-    int h;
-} Interval;
+typedef Pitch Interval;
 ```
 
 ## Semitones

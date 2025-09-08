@@ -1,0 +1,212 @@
+---
+title: Maps
+description: A bit of background information on the sets musical information lives in.
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Maps are where meantonal's vector representation really shines. Before we can properly explore them, let's review some basic facts about the sets our musical information lives in:
+
+- Pitch is 1-dimensional: frequencies are measured in real numbers, using units such as Hertz/CPS.
+    - That is: they live in $\R$.
+- Meantonal's `Pitch` and `Interval` vectors are discrete and 2-dimensional.
+    - That is: they live in $\Z^2$.
+- Tuning systems like 12-tone equal temperament have a finite number of pitches per octave.
+    - That is, they live in $\Z$.
+- Abstractions like "12 tone pitch class" or "scale degree" have a finite total number of values, and work by modular arithmetic.
+    - That is, they live in $\Z_n$ for some integer $n$.
+
+Most of Meantonal's information querying is done via [linear maps](https://en.wikipedia.org/wiki/Linear_map) from $\Z^2$ to $\Z$ via multiplication with a $1\times2$ mapping matrix, or division/remainder operations on the integers resulting from these maps.
+
+## Querying Information
+
+Let's make things more concrete with an example: extracting information from an arbitrary `Pitch` vector.
+
+### Extracting MIDI
+
+Information like a `Pitch`'s MIDI number can usually be queried via a matrix multiplication.
+
+<Aside type="tip" title="Example">
+
+To find the MIDI value of $\sf{C}\sharp_4$, represented by $(26, 9)$, we use the MIDI mapping matrix $[2, 1]$:
+
+$$
+[2, 1]
+\begin{pmatrix}
+26 \\
+9
+\end{pmatrix} = (2)(26) + (1)(9) = 61
+$$
+
+Notice we went from a 2d vector to a single integer: $\Z^2\rightarrow\Z$.
+
+</Aside>
+
+
+No linear map from $\Z^2$ to $\Z$ is invertible. If $\sf{C}\sharp_4$ and $\sf{D}\flat_4$ are both sent to the MIDI number 61, the mapping was not **one-to-one**. No inverse map can exist. This means we can convert a Meantone `Pitch` vector into MIDI, but we cannot simply convert *from* MIDI.
+
+### Extracting Pitch Class
+
+Modular information like 12-tone pitch class can be queried by taking remainders after regular Euclidean division.
+
+<Aside type="tip" title="Example">
+
+To find the 12-tone pitch class of $\sf{C}\sharp_4$, which we established was represented by the MIDI number 61, we could simply divide by 12 and take the remainder:
+
+$$
+61\div12 = 5\; \sf{remainder}\; 1
+$$
+
+1 is therefore the 12-tone pitch class of $\sf{C}\sharp$. Since there are an infinite number of integers, but only 12 pitch classes: $\Z\rightarrow\Z_{12}$.
+
+The previous map can also be composed with this one: $\Z^2\rightarrow\Z_{12}$.
+
+</Aside>
+
+No map from $\Z$ to $\Z_n$ is invertible. If MIDI numbers 65 and 77  are both sent to the 12-tone pitch class 5 the function was not **one-to-one**. No inverse function can exist.
+
+### Extracting Letter Name
+
+We can recover the letter name from a `Pitch` vector quite easily. The diatonic mapping matrix $[1, 1]$ tells us how many diatonic steps separate a `Pitch` from $\sf{C}_{-1}$; taking remainders after dividing by 7 then gives us a value we can map to the note's letter.
+
+<Aside type="tip" title="Example">
+
+To query the letter of the note represented by $(26, 9)$, we first use the diatonic mapping matrix $[1, 1]$:
+
+$$
+[1, 1]
+\begin{pmatrix}
+26 \\
+9
+\end{pmatrix} = 26 + 9 = 35
+$$
+
+We can then divide by 7 and take the remainder:
+
+$$
+35\div7 = 5\; \sf{remainder}\; 0
+$$
+
+Our original `Pitch` therefore differs from $\sf{C}_{-1}$ in letter by 0 steps, and its letter component is therefore $\sf{"C"}$ too. 
+
+Much like querying 12-tone pitch class, this is a map: $\Z^2\rightarrow\Z_{7}$.
+
+</Aside>
+
+As with the previous examples, there is no inverse map back to `Pitch` vectors from just letter names.
+
+## Information Loss
+
+The sorts of maps demonstrated above are called **semantically destructive** in Meantonal.
+
+Meantonal tries to preserve semantic information. This is achieved by keeping data in vector format wherever possible, and then simply **extracting** lower-dimensional representations when they are required.
+
+<Aside type="caution">
+
+If you are integrating Meantonal into an existing project where musical information is stored differnetly, it may only be possible to translate in one direction: **from** Meantonal's representation.
+
+If multiple Pitch or Interval vectors map to the same value in your system, the mapping is not one-to-one, and no inverse mapping can exist.
+
+</Aside>
+
+This means you will generally want to place any 1-dimensional pitch handling **downstream** of vector-based data structures and operations. Query MIDI or pitch class values, and operate them directly if possible, before continuing to operate on the original Pitch or Interval vectors the information was extracted from.
+
+## Another View on Maps
+
+You might be wondering after reading the above why the MIDI matrix or the diatonic matrix "work". Or maybe you're wondering how we arrive at those *specific matrices* for our operations?
+
+Buckle up, because this is the most magical aspect of Meantonal's vector representation: we can pick and choose which notes we want to partition into equivalence classes, then construct a matrix that will make the difference between them *simply disappear*.
+
+### Null Spaces
+
+Meantonal's `Pitch` and `Interval` vectors are 2-dimensional. A $1\times2$ matrix maps from two dimensions down to one. That means we're throwing away a dimension. Every $1\times2$ matrix has a non-empty [null space](https://en.wikipedia.org/wiki/Kernel_(linear_algebra)) (also called its "kernel"), which represents all the vectors it sends to zero. You can think of this as where our lost dimension "goes".
+
+How can we use this?
+
+<Aside type="tip">
+
+A handy result is that for any matrix $[a, b]$, $(b, -a)$ represents vector in its null space.
+
+</Aside>
+
+Consider the problem of measuring the *generic* interval between two notes in terms of diatonic steps. We want the distance from *any* flavour of $\sf{C}_4$ to *any* flavour of $\sf{E}_4$ to produce the same result here: $\sf{C}\sharp_4$ to $\sf{E}_4$ and $\sf{C}_4$ to $\sf{E}_4$ are both generic "thirds", even if their quality is different.
+
+What if we could make the difference between $\sf{C}_4$, $\sf{C}\sharp_4$ and $\sf{C}\flat_4$ etc. disappear? Every variant of the letter name $\sf{"C"}$ is separated by some number of chromatic semitones, and the chromtaic semitone's `Interval` vector is $(1, -1)$. Then $[1, 1]$ is a matrix which has the chromatic semitone in its null space.
+
+That means if we apply $[1, 1]$ as a linear map, the chromatic semitone is sent to 0, and any notes separated by it are mapped to the same number:
+
+$$
+\sf{C}_4 = (25, 10) \rightarrow 35
+$$
+$$
+\sf{C}\sharp_4 = (26, 9) \rightarrow 35
+$$
+$$
+\sf{C}\flat_4 = (24, 11) \rightarrow 35
+$$
+
+The diatonic map is a linear map that makes chromatic semitones disappear. Or, for another view: the chromatic semitone is defined as the difference between a whole step and a half step (diatonic semitone). If we make the chromatic semitone disapper, then there *is* no difference between whole steps and half steps, and we simply end up with generic diatonic "steps".
+
+What about the MIDI/12TET map? The distinguising feature of 12-tone equal temperament is that it makes diatonic and chromatic semitones the same size. C# and Db map to the same number. That means the difference between the chromatic semitone $(1, -1)$ and the diatonic semitone $(0, 1)$, also known as the enharmonic diesis $(1, -2)$, is what we want to make disappear. Then $[2, 1]$ is a matrix which has the enharmonic diesis in its null space.
+
+$$
+\sf{C}\sharp_4 = (26, 9) \rightarrow 61
+$$
+$$
+\sf{D}\flat_4 = (25, 11) \rightarrow 61
+$$
+
+### Octave Abstraction
+
+For another extremely useful example: what if we want to abstract away octave information **and nothing else**? We already looked at how to map from `Pitch` vectors to 12-tone pitch classes, but that's not quite the same thing: octave information was abstracted away by the remainder operation, but we also lost the distinction between $\sf{C}\sharp$ and $\sf{D}\flat$. No, what we want is a linear map that has the octave $(5, 2)$ in its null space: the *chroma* map $[2, -5]$.
+
+This map partitions $\sf{C}\sharp_2$, $\sf{C}\sharp_3$, $\sf{C}\sharp_4$ etc. into an equivalence class, and  $\sf{D}\flat_2$, $\sf{D}\flat_3$, $\sf{D}\flat_4$ etc. into a different one. But it has another remarkably useful property: it also orders pitch class names in a series of perfect 5ths.
+
+$$
+\sf{C}_4 = (25, 10) \rightarrow 0
+$$
+$$
+\sf{G}_4 = (28, 11) \rightarrow 1
+$$
+$$
+\sf{D}_4 = (26, 10) \rightarrow 2
+$$
+$$
+\sf{A}_4 = (29, 11) \rightarrow 3
+$$
+$$
+\sf{E}_4 = (27, 10) \rightarrow 4
+$$
+
+The chroma map is one of the most versatile tools in Meantonal's arsenal, as we can use quotients and remainders with various dividends to extract all kinds of information. For example, if we divide by 7, the remainder gives us the letter name in much the same way as the $[1, 1]$ diatonic map, while the *quotient* is a way to retrieve the *accidental*.
+
+Two notes are enharmonically equivalent in 12TET if they have the same remainder when we divide their chroma by 12. This can also be generalised to other tuning systems: they are enharmonic in 31TET if they have the same remainder when dividing their chroma by 31.
+
+## Yet Another View
+
+The previous section looked at how to make `Pitch` and `Interval` vectors *vanish*. Another way to think of matrices is in terms of how "big" they make the whole step and half step. This is particularly useful when creating maps to alternative tuning systems, and makes the matrices intuitive to construct.
+
+- In 12-tone equal temperament, a whole step is twice the size of a half step. $[2, 1]$ is the 12TET map.
+- In 19EDO, a whole step is three [EDO-steps](https://en.xen.wiki/w/EDO) while a half step is two. $[3, 2]$ is the 19EDO map.
+- In 31EDO, the ratio is 5 to 3. $[5, 3]$ is the 31EDO map.
+- In 7EDO, the ratio is 1 to 1: $[1, 1]$ is the 7EDO map.
+
+## Changing Basis
+
+So far we've only looked at $1\times2$ matrices. $2\times2$ also have utility as a way to effect a [change of basis](https://en.wikipedia.org/wiki/Change_of_basis). In particular, we can change our coordinate system from $(\sf{whole\; step}, \sf{half\; step})$ to something else like $(\sf{whole\; step}, \sf{perfect\; fifth})$, which is the mapping used in the [Wicki-Hayden](https://en.wikipedia.org/wiki/Wicki%E2%80%93Hayden_note_layout) keyboard layout.
+
+We could also map to/from a coordinate system where one axis increments in perfect 5ths, and the other in octaves. Why might we want to do this? Various meantone tuning systems like [quarter-comma](https://en.wikipedia.org/wiki/Quarter-comma_meantone) or [golden meantone](https://en.xen.wiki/w/Golden_meantone) have an infinite number of pitches, and are generated by their octave and fifth. Expressing `Pitch` vectors in this coordinate system would allow us to do something like the following:
+
+$$
+[1200¢, x]
+\begin{bmatrix}
+2 & -5 \\
+-1 & 3
+\end{bmatrix}P
+$$
+
+Where x is the desired width of the perfect 5th in cents, and P is a `Pitch` vector.
+
+This allows us to create different meantone tunings by simply specifying the width of a perfect 5th in the system, and map any `Pitch` vector to its corresponding frequency in the tuning.
