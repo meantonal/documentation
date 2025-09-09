@@ -7,7 +7,45 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Currently there is only one version of Meantonal, implemented in C. Adding it to your project is as simple as copying the [`meantonal.h`](https://raw.githubusercontent.com/meantonal/meantonal/refs/heads/master/meantonal.h) header file somewhere into your project's directory, which can be done via the following bash script:
+Currently there are two implementations of Meantonal: one in TypeScript and one in C.
+
+## TypeScript
+
+Just run the following command in your project directory to get started:
+
+<Tabs>
+  <TabItem label="Bash">
+```bash frame=none
+npm install meantonal
+```
+  </TabItem>
+</Tabs>
+
+You're now ready to import and use Meantonal's classes.
+
+```ts
+import { Pitch, Interval, TonalContext, Axis } from "meantonal";
+
+let p = Pitch.fromSPN("C4");
+let q = Pitch.fromSPN("E4");
+
+let m = p.intervalTo(q);
+let n = Interval.fromName("M3");
+
+m.isEqual(n); // true
+
+let context = TonalContext.fromStrings("Eb", "major");
+
+q = q.snapDiatonic(context); // q has now snapped to Eb4
+
+let axis = Axis.fromSPN("D4", "A4");
+
+q = q.invert(axis); // q is now G#4
+```
+
+## C
+
+Adding Meantonal to a C project is as simple as copying the [`meantonal.h`](https://raw.githubusercontent.com/meantonal/meantonal/refs/heads/master/meantonal.h) header file somewhere into your project's directory, which can be done via the following bash script:
 
 <Tabs>
   <TabItem label="Bash">
@@ -21,16 +59,22 @@ You must `#define MEANTONAL` in exactly **one** file before the first inclusion 
 
 ```c
 // foo.c
+#include <stdlib.h>
+
 #define MEANTONAL
 #include "meantonal.h"
 
 Pitch c4, e4; // declares but does not assign values to two Pitch vectors
 Pitch g4 = { 28, 11 }; // directly initialises a Pitch
 // assigning values
-if (pitch_from_spn("C4", &c4))
+if (pitch_from_spn("C4", &c4)) {
     fprintf(stderr, "error parsing pitch from SPN");
-if (pitch_from_spn("E4", &e4))
+    exit(EXIT_FAILURE);
+}
+if (pitch_from_spn("E4", &e4)) {
     fprintf(stderr, "error parsing pitch from SPN");
+    exit(EXIT_FAILURE);
+}
 
 Interval M3 = interval_between(c4, e4); // creates a major 3rd Interval vector
 Interval P5 = interval_between(c4, g5); // creates a perfect 5th interval vector
@@ -42,15 +86,20 @@ After that, just include `meantonal.h` in any other files as needed.
 
 ```c
 // bar.c
+#include <stdlib.h>
 #include "meantonal.h"
 
 Pitch p;
-if (pitch_from_spn("E4", &p))
+if (pitch_from_spn("E4", &p)) {
     fprintf(stderr, "error parsing pitch from SPN");
+    exit(EXIT_FAILURE);
+}
 
 MirrorAxis a;
-if (axis_from_spn("C4", "G4"))
+if (axis_from_spn("C4", "G4")) {
     fprintf(stderr, "error parsing pitch(es) from SPN when creating MirrorAxis");
+    exit(EXIT_FAILURE);
+}
 
 pitch_invert(p, a); // p has been inverted about the axis to Eb4
 

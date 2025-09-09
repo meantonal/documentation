@@ -30,10 +30,24 @@ If $m$ is a *vertical* interval, $-m$ represents the same interval with the part
 
 </Aside>
 
-Internally, the [`Interval`](/c/types/#interval) type is a struct identical to the [`Pitch`](/c/types/#pitch) type, and is defined as an alias of `Pitch`:
+Internally, the C implementation of Meantonal defines the [`Interval`](/c/types/#interval) type as a struct identical to the [`Pitch`](/c/types/#pitch) type, by simply alisasing `Pitch`:
 
 ```c
 typedef Pitch Interval;
+```
+
+The TypeScript implementation defines the [`Interval`](/js/interval) Class:
+
+```ts
+export class Interval {
+    w: number;
+    h: number;
+    constructor(w: number, h: number) {
+        this.w = w;
+        this.h = h;
+    }
+    // method definitions omitted
+}
 ```
 
 ## Semitones

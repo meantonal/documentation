@@ -22,7 +22,7 @@ hero:
       link: /start/what-is-meantonal
       icon: right-arrow
     - text: View on GitHub
-      link: https://github.com/meantonal/meantonal
+      link: https://github.com/meantonal
       icon: external
       variant: minimal
 ---
@@ -32,7 +32,12 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 <Card title="Install" icon="rocket">
   <Tabs>
-    <TabItem label="Bash">
+    <TabItem label="JavaScript">
+    ```bash frame=none
+    npm install meantonal
+    ```
+    </TabItem>
+    <TabItem label="C">
     ```bash frame=none
     curl https://meantonal.org/meantonal.h > meantonal.h
     ```

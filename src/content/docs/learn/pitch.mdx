@@ -12,13 +12,27 @@ Meantonal stores pitches as two-dimensional vectors. C₋₁ is defined to be $(
 - The first component of a pitch's vector represents increments in **whole steps**.
 - The second component represents increments in **diatonic semitones** (that is, from C to D♭, not from C to C♯).
 
-Internally, the [`Pitch`](/c/types/#pitch) type is defined as a simple struct:
+Internally, the C implementation of Meantonal defines the [`Pitch`](/c/types/#pitch) type as a simple struct:
 
 ```c
 typedef struct {
     int w;
     int h;
 } Pitch;
+```
+
+The TypeScript implementation defines the [`Pitch`](/js/pitch) Class:
+
+```ts
+export class Pitch {
+    w: number;
+    h: number;
+    constructor(w: number, h: number) {
+        this.w = w;
+        this.h = h;
+    }
+    // method definitions omitted
+}
 ```
 
 ### A simple scale
