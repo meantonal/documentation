@@ -1,0 +1,271 @@
+---
+title: Interval
+description: An overview of the Interval class and its methods.
+sidebar:
+  order: 2
+---
+
+This page details the `Interval` class and all its methods.
+
+## Creating Intervals
+
+There are three main ways to create `Interval` vectors from scratch. Directly, using the [class constructor](#class-constructor); using strings via the static methods [`Interval.fromName`](#intervalfromname) or [`Interval.fromSPN`](#intervalfromspn), or from two [`Pitch`](/js/pitch) vectors via [`Interval.between`](#intervalbetween).
+
+### Class Constructor
+
+```ts
+constructor(w: number, h: number);
+```
+
+Internally an interval is defined as some number of whole steps and some number of half steps from the unison. You can directly initialise an `Interval` like so:
+
+```ts
+let m = new Interval(5, 2); // coordinates for an octave
+
+m.w; // 5
+m.h; // 2
+```
+
+### `Interval.fromName`
+
+```ts
+static fromName(name: string): interval;
+```
+
+It's often more convenient to initialise an `Interval` from a standard interval name as a string. `Interval.fromSPN` parses such a string:
+
+```ts
+let m = Interval.fromName("P8");
+
+m.w; // 5
+m.h; // 2
+```
+
+### `Interval.fromSPN`
+
+```ts
+static fromSPN(ps: string, qs: string): interval;
+```
+
+Initialises an interval from two note names specified as [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) strings. Measures the distance *from* the first `Pitch` *to* the second.
+
+```ts
+let m = Interval.fromSPN("C4", "C5");
+
+m.w; // 5
+m.h; // 2
+```
+
+### `Interval.between`
+
+```ts
+static between(p: pitch, q: pitch): interval;
+```
+
+Measures the distance *from* the first `Pitch` *to* the second pitch. That is, `Interval.between(p, q)` returns the vector $q - p$:
+
+```ts
+let p = Note.fromSPN("C4");
+let q = Note.fromSPN("C5");
+let m = Interval.between(p, q);
+
+m.w; // 5
+m.h; // 2
+```
+
+## Common Queries
+
+The following methods extract information from an `Interval` vector.
+
+### `Interval.chroma`
+
+```ts
+get chroma(): number;
+```
+
+The signed distance of an `Interval` from the unison in perfect fifths:
+
+```ts
+let m = Interval.fromName("P5");
+m.chroma; // 1
+
+m = Interval.fromName("M3");
+m.chroma; // 4
+
+m = Interval.fromName("m3");
+m.chroma; // -3
+```
+
+### `Interval.quality`
+
+```ts
+get quality(): number;
+```
+
+The quality component of an `Interval` vector's standard name, expressed as a signed integer.
+- 0 means perfect.
+- +1 means major.
+- -1 means minor.
+- +2 means augmented.
+- -2 means diminished.
+- etc. for any arbitrary quality.
+
+```ts
+let m = Interval.fromName("P5");
+m.quality; // 0
+
+m = Interval.fromName("M3");
+m.quality; // 1
+
+m = Interval.fromName("m3");
+m.quality; // -1
+
+m = Interval.fromName("A6");
+m.quality; // 2
+```
+
+### `Interval.stepspan`
+
+```ts
+get stepspan(): number;
+```
+
+The "stepspan" of an `Interval` is the number of diatonic steps it contains, where 0 is the unison, 1 is a generic second and so on. Essentially one less than the number conventionally used to describe the generic size of intervals.
+
+```ts
+let m = Interval.fromName("M6");
+m.stepspan; // 5
+
+m = Interval.fromName("P8");
+m.stepspan; // 7
+```
+
+### `Interval.pc7`
+
+```ts
+get pc7(): number;
+```
+
+The 0-indexed 7-tone pitch class of an Interval. Essentially its size in steps, modulo 7.
+
+```ts
+let m = Interval.fromName("M6");
+m.pc7; // 5
+
+m = Interval.fromName("M13");
+m.pc7; // also 5
+```
+
+### `Interval.pc12`
+
+```ts
+get pc12(): number;
+```
+
+The 12-tone pitch class interval of an `Interval` vector.
+
+```ts
+let m = Interval.fromName("P5");
+m.pc12; // 7
+```
+
+### `Interval.simple`
+
+```ts
+get simple(): interval;
+```
+
+The simple
+
+### `Interval.negative`
+
+```ts
+get negative(): interval;
+```
+
+The flipped version of an `Interval`. An ascending major 3rd will become a descending major 3rd. Or for vertical intervals, voices will exchange places.
+
+```ts
+let m = Interval.fromName("M3");
+let p = Note.fromSPN("C4");
+
+p.transposeReal(m); // E4
+p.transposeReal(m.negative); // Ab3
+```
+
+### `Interval.isEqual`
+
+```ts
+isEqual(m: interval): boolean;
+```
+
+Returns true if and only if the passed in `Interval` vector and the current vector are identical. Note that this does not mean “are enharmonically equivalent in 12TET”, or “have the same chroma”: they must literally hold the same coordinates.
+
+```ts
+let m = Pitch.fromName("A4");
+let n = Pitch.fromName("D5");
+
+m.isEqual(n); // false
+
+n = Pitch.fromName("A11");
+m.isEqual(n); // false
+
+n = Pitch.fromName("A4");
+m.isEqual(n); // true
+```
+
+### `Interval.isEnharmonic`
+
+```ts
+isEnharmonic(m: interval, edo?: number): boolean;
+```
+
+Returns true if the passed in `Interval` is enharmonic to the current `Interval` in the passed in EDO tuning. If no second argument is passed this method defaults to 12TET. Intervals will still register as enharmonic if one is simple and the other is compound.
+
+```ts
+let m = Interval.fromName("m7");
+let n = Interval.fromName("A6");
+
+m.isEnharmonic(n); // true (in 12TET)
+m.isEnharmonic(n, 31); // false (in 31EDO)
+
+m = Interval.fromName("AAAA6");
+n = Interval.fromName("P8");
+
+m.isEnharmonic(n); // false (in 12TET)
+m.isEnharmonic(n, 31); // true (in 31EDO)
+```
+
+## Transformations
+
+The following methods produce a new vector from the current `Interval`. None of them mutate the original object.
+
+### `Interval.add`
+
+```ts
+add(m: interval): interval;
+```
+
+Adds two `Interval` vectors together.
+
+```ts
+let m = Interval.fromName("M3");
+let n = Interval.fromName("m3");
+
+m,add(n); // P5
+```
+
+### `Interval.subtract`
+
+```ts
+subtract(m: interval): interval;
+```
+
+Subtracts two `Interval` vectors.
+
+```ts
+let m = Interval.fromName("P5");
+let n = Interval.fromName("m3");
+
+m.subtract(n); // M3
+```
