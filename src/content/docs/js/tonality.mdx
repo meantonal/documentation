@@ -1,0 +1,155 @@
+---
+title: TonalContext
+description: An overview of the TonalContext class and its methods.
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Creating a TonalContext
+
+A `TonalContext` provides a context against which to evaluate the position and behaviour of notes "in" a key or mode. It exposes the following public fields:
+
+```ts
+tonic: {
+    letter: string;
+    accidental: number;
+    chroma: number;
+};
+mode: number;
+```
+
+### Class Constructor
+
+```ts
+constructor(chroma: number, mode: number);
+```
+
+<Aside type="tip">
+
+It's much more intuitive to manually initialise a `TonalContext` via [`TonalContext.fromStrings`](#fromstrings)
+
+</Aside>
+
+You can create a `TonalContext` directly via the class constructor function, from the pitch chroma of its tonic degree, and a "mode number" using the following table:
+
+|            |   |
+|------------|---|
+| Lydian     | 0 |
+| Ionian     | 1 |
+| Mixolydian | 2 |
+| Dorian     | 3 |
+| Aeolian    | 4 |
+| Phrygian   | 5 |
+| Locrian    | 6 |
+
+```ts
+let context = new TonalContext(2, 1); // D major
+
+let p = Pitch.fromSPN("F4");
+p.snapTo(context); // F#4;
+```
+
+### `fromStrings`
+
+```ts
+static fromStrings(tonic: string, mode: string): TonalContext;
+```
+
+The more intuitive way to initialise a `TonalContext`. Takes the name of the tonic pitch class and the name of the mode as strings. Can be "major" or "minor", or a traditional modal name like "dorian" or "ionian". Case-insensitive.
+
+```ts
+let context = TonalContext.fromStrings("G", "minor");
+
+let p = Pitch.fromSPN("B4");
+p.snapTo(context); // Bb4
+```
+
+## Methods
+
+Most of `TonalContext`'s methods are usually more conveniently accessed from the `Pitch` vectors they act on rather than the class itself, but are available nonetheless. [`TonalContext.degreeChroma`](#degreechroma) is only available as a method directly on a `TonalContext` instance, however.
+
+<Aside type="tip">
+
+None of these methods mutate the passed-in `Pitch` vector.
+
+</Aside>
+
+### `degreeNumber`
+
+```ts
+degreeNumber(p: Pitch): number;
+```
+
+Returns the scale degree (0-indexed, such that the tonic is 0) of the passed in `Pitch` vector in the current `TonalContext`.
+
+```ts
+let context = TonalContext.fromStrings("C", "major");
+
+let p = Pitch.fromSPN("C4");
+context.degreeNumber(p); // 0
+
+p = Pitch.fromSPN("D4");
+context.degreeNumber(p); // 1
+
+p = Pitch.fromSPN("D#4");
+context.degreeNumber(p); // still 1 (just an altered variant)
+```
+
+### `degreeAlteration`
+
+```ts
+degreeAlteration(p: Pitch): number;
+```
+
+Returns the scale degree alteration represented by a `Pitch` in the current `TonalContext`, e.g. C# is a raised note in the key of C major.
+- 0 represents a diatonic degree.
+- +1 and -1 represent raised and lowered degrees respectively.
+- +2 and -2 represent degrees too sharp or too flat to belong in a given `TonalContext`.
+
+```ts
+let context = TonalContext.fromStrings("G", "minor");
+
+let p = Pitch.fromSPN("Bb4")
+context.degreeAlteration(p); // 0, Bb is diatonic in D minor
+
+p = Pitch.fromSPN("B4")
+context.degreeAlteration(p); // 1, B is raised in D minor
+
+p = Pitch.fromSPN("Bbb4")
+context.degreeAlteration(p); // -2, Bbb is too flat for this context
+```
+
+### `degreeChroma`
+
+```ts
+degreeChroma(degree: number): number;
+```
+
+Returns the chroma of the diatonic version of the degree number passed in (0-indexed, so the tonic is 0).
+
+```ts
+let context = TonalContext.fromStrings("G", "minor");
+
+context.degreeChroma(0); //  1, the chroma of G
+context.degreeChroma(1); //  3, the chroma of A
+context.degreeChroma(2); // -2, the chroma of Bb
+context.degreeChroma(3); //  0, the chroma of C
+```
+
+### `snapDiatonic`
+
+```ts
+snapDiatonic(p: Pitch): Pitch;
+```
+
+Snaps the passed-in `Pitch` vector to the diatonic position for that letter-name in
+the current `TonalContext`. Returns the result as a new `Pitch`:
+
+```ts
+let context = TonalContext.fromStrings("C", "major");
+let p = Pitch.fromSPN("F#4");
+
+p = context.snapDiatonic(p); // p now points to F4
+```

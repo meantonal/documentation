@@ -26,7 +26,7 @@ m.w; // 5
 m.h; // 2
 ```
 
-### `Interval.fromName`
+### `fromName`
 
 ```ts
 static fromName(name: string): interval;
@@ -41,7 +41,7 @@ m.w; // 5
 m.h; // 2
 ```
 
-### `Interval.fromSPN`
+### `fromSPN`
 
 ```ts
 static fromSPN(ps: string, qs: string): interval;
@@ -56,7 +56,7 @@ m.w; // 5
 m.h; // 2
 ```
 
-### `Interval.between`
+### `between`
 
 ```ts
 static between(p: pitch, q: pitch): interval;
@@ -77,7 +77,7 @@ m.h; // 2
 
 The following methods extract information from an `Interval` vector.
 
-### `Interval.chroma`
+### `chroma`
 
 ```ts
 get chroma(): number;
@@ -96,7 +96,7 @@ m = Interval.fromName("m3");
 m.chroma; // -3
 ```
 
-### `Interval.quality`
+### `quality`
 
 ```ts
 get quality(): number;
@@ -124,7 +124,7 @@ m = Interval.fromName("A6");
 m.quality; // 2
 ```
 
-### `Interval.stepspan`
+### `stepspan`
 
 ```ts
 get stepspan(): number;
@@ -140,7 +140,7 @@ m = Interval.fromName("P8");
 m.stepspan; // 7
 ```
 
-### `Interval.pc7`
+### `pc7`
 
 ```ts
 get pc7(): number;
@@ -156,7 +156,7 @@ m = Interval.fromName("M13");
 m.pc7; // also 5
 ```
 
-### `Interval.pc12`
+### `pc12`
 
 ```ts
 get pc12(): number;
@@ -169,7 +169,7 @@ let m = Interval.fromName("P5");
 m.pc12; // 7
 ```
 
-### `Interval.simple`
+### `simple`
 
 ```ts
 get simple(): interval;
@@ -177,7 +177,7 @@ get simple(): interval;
 
 The simple
 
-### `Interval.negative`
+### `negative`
 
 ```ts
 get negative(): interval;
@@ -193,7 +193,7 @@ p.transposeReal(m); // E4
 p.transposeReal(m.negative); // Ab3
 ```
 
-### `Interval.isEqual`
+### `isEqual`
 
 ```ts
 isEqual(m: interval): boolean;
@@ -214,7 +214,7 @@ n = Pitch.fromName("A4");
 m.isEqual(n); // true
 ```
 
-### `Interval.isEnharmonic`
+### `isEnharmonic`
 
 ```ts
 isEnharmonic(m: interval, edo?: number): boolean;
@@ -240,7 +240,7 @@ m.isEnharmonic(n, 31); // true (in 31EDO)
 
 The following methods produce a new vector from the current `Interval`. None of them mutate the original object.
 
-### `Interval.add`
+### `add`
 
 ```ts
 add(m: interval): interval;
@@ -255,7 +255,7 @@ let n = Interval.fromName("m3");
 m,add(n); // P5
 ```
 
-### `Interval.subtract`
+### `subtract`
 
 ```ts
 subtract(m: interval): interval;

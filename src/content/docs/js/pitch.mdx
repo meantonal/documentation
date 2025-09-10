@@ -26,7 +26,7 @@ p.w; // 25
 p.h; // 10
 ```
 
-### `Pitch.fromSPN`
+### `fromSPN`
 
 ```ts
 static fromSPN(spn: string): Pitch;
@@ -35,13 +35,13 @@ static fromSPN(spn: string): Pitch;
 It's often more convenient to initialise a `Pitch` from a string. `Pitch.fromSPN` parses a `Pitch` from [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation):
 
 ```ts
-let p = Pitch.fromSPN("C4");
+let p = fromSPN("C4");
 
 p.w; // 25
 p.h; // 10
 ```
 
-### `Pitch.fromChroma`
+### `fromChroma`
 
 ```ts
 static fromChroma(chroma: number, octave: number): Pitch;
@@ -60,7 +60,7 @@ p.h; // 10
 
 The following methods extract information from a `Pitch` vector.
 
-### `Pitch.midi`
+### `midi`
 
 ```ts
 get midi(): number;
@@ -85,7 +85,7 @@ p = Pitch.fromSPN("A9");
 p.midi; // Error: Outside of standard MIDI range: 129
 ```
 
-### `Pitch.chroma`
+### `chroma`
 
 ```ts
 get chroma(): number;
@@ -101,7 +101,7 @@ p = Pitch.fromSPN("Eb5");
 p.chroma; // -3, because Eb Bb F C => -3 -2 -1 0
 ```
 
-### `Pitch.pc7`
+### `pc7`
 
 ```ts
 get pc7(): number;
@@ -117,7 +117,7 @@ p = Pitch.fromSPN("F4");
 p.pc7; // 3
 ```
 
-### `Pitch.pc12`
+### `pc12`
 
 ```ts
 get pc12(): number;
@@ -136,7 +136,7 @@ p = Pitch.fromSPN("Fb4");
 p.pc12; // also 4, due to enharmonicity in 12TET
 ```
 
-### `Pitch.letter`
+### `letter`
 
 ```ts
 get letter(): string;
@@ -149,7 +149,7 @@ let p = Pitch.fromSPN("E4");
 p.letter; // "E"
 ```
 
-### `Pitch.accidental`
+### `accidental`
 
 ```ts
 get accidental(): number;
@@ -174,7 +174,7 @@ p = Pitch.fromSPN("Abbb");
 p.accidental; // -3
 ```
 
-### `Pitch.octave`
+### `octave`
 
 ```ts
 get octave(): number;
@@ -187,7 +187,7 @@ let p = Pitch.fromSPN("F4");
 p.octave; // 4
 ```
 
-### `Pitch.isEqual`
+### `isEqual`
 
 ```ts
 isEqual(p: Pitch): boolean;
@@ -208,7 +208,7 @@ q = Pitch.fromSPN("C4");
 p.isEqual(q); // true
 ```
 
-### `Pitch.isEnharmonic`
+### `isEnharmonic`
 
 ```ts
 isEnharmonic(p: Pitch, edo?: number): boolean;
@@ -230,11 +230,11 @@ p.isEnharmonic(q); // false (in 12TET)
 p.isEnharmonic(q, 31); // true (in 31EDO)
 ```
 
-### `Pitch.degreeIn`
+### `degreeIn`
 
 ```ts
 degreeIn(context: TonalContext): number;
-```4
+```
 
 Returns the scale degree number (0-indexed, such that the tonic degree is 0) represented by the `Pitch` in the passed-in [`TonalContext`](/js/tonality):
 
@@ -251,7 +251,7 @@ p = Pitch.fromSPN("D#4");
 p.degreeIn(context); // still 1 (just an altered variant)
 ```
 
-### `Pitch.alterationIn`
+### `alterationIn`
 
 ```ts
 alterationIn(context: TonalContext): number;
@@ -279,7 +279,7 @@ p.alterationIn(context); // -2, Bbb is too flat for this context
 
 The following methods produce a new vector from the current `Pitch`. None of them mutate the original object.
 
-### `Pitch.intervalTo`
+### `intervalTo`
 
 ```ts
 intervalTo(p: Pitch): Interval;
@@ -295,7 +295,7 @@ let m = p.intervalTo(q); // m now holds a major third Interval
 let n = Interval.between(p, q); // equivalent
 ```
 
-### `Pitch.transposeReal`
+### `transposeReal`
 
 ```ts
 transposeReal(m: Interval): Pitch;
@@ -312,7 +312,7 @@ p = p.transposeReal(m);
 p.isEqual(q); // true
 ```
 
-### `Pitch.invert`
+### `invert`
 
 ```ts
 invert(axis: Axis): Pitch;
@@ -327,7 +327,7 @@ let p = Pitch.fromSPN("Db4");
 p = p.invert(axis); // p now points to F#4
 ```
 
-### `Pitch.snapTo`
+### `snapTo`
 
 ```ts
 snapTo(context: TonalContext): Pitch;
@@ -343,7 +343,7 @@ let p = Pitch.fromSPN("F#4");
 p = p.snapTo(context); // p now points to F4
 ```
 
-### `Pitch.transposeDiatonic`
+### `transposeDiatonic`
 
 ```ts
 transposeDiatonic(steps: number, context: TonalContext): Pitch;
