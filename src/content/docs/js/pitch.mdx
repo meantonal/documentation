@@ -187,6 +187,19 @@ let p = Pitch.fromSPN("F4");
 p.octave; // 4
 ```
 
+### `SPN`
+
+```ts
+get SPN(): string;
+```
+
+The [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) name of a `Pitch` as a string.
+
+```ts
+let p = Pitch.fromSPN("Abb5");
+p.SPN; // "Abb5"
+```
+
 ### `isEqual`
 
 ```ts
