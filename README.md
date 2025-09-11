@@ -1,16 +1,45 @@
-# Starlight Starter Kit: Tailwind
-
 [![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
 
+# Table of Contents
+
+- [Meantonal](#meantonal)
+- [Project Structure](#project-structure)
+- [Commands](#commands)
+
+<img align="left" src="/src/assets/logo.svg" width="48">
+  
+# Meantonal
+
+Meantonal is a specification for representing pitch information in Western music, and a suite of tools for operating on this information. It's a small, focused library that aims to empower developers to build musical apps more easily.
+
+Meantonal is:
+
+- **Flexible with I/O**: easily ingest and translate between Scientific Pitch Notation, Helmholtz notation, ABC and Lilypond. Extract MIDI values at any time.
+- **Semantically nondestructive**: the distinction between enharmonic notes such as $\sf{C}\sharp$ and $\sf{D}\flat$ is maintained. Things that don't behave the same way musically are not encoded the same way in Meantonal.
+- **Just vectors**: under the hood [pitches](https://meantonal.org/learn/pitch/) and [intervals](https://meantonal.org/learn/intervals/) are 2d vectors. Operations are simple to understand, surprisingly powerful, and fast to execute.
+- **Tuning-agnostic**: Target any meantone tuning system, not just 12-tone equal temperament. You want 31 tones per octave? Done.
+
+This is the repository for the companion documentation website for Meantonal. As an open source project, contributions are welcome! The information below will help you get started.
+
+## Getting Started
+
+First, clone the repo:
+
+```bash
+https://github.com/meantonal/documentation.git
 ```
-npm create astro@latest -- --template starlight/tailwind
+
+Then, `cd` into the new directory and run `npm install`:
+
+```bash
+cd documentation && npm install
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Now you can run `npm run dev` to spin up a dev server and start editing!
 
-## 🚀 Project Structure
+## Project Structure
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
+The documentation site is an Astro + Starlight project. Inside the root directory, you'll see the following folders and files:
 
 ```
 .
@@ -19,6 +48,7 @@ Inside of your Astro + Starlight project, you'll see the following folders and f
 │   ├── assets/
 │   ├── content/
 │   │   └── docs/
+│   ├── pages/
 │   ├── styles/
 │   │   └── global.css
 │   └── content.config.ts
@@ -33,9 +63,9 @@ Images can be added to `src/assets/` and embedded in Markdown with a relative li
 
 Static assets, like favicons, can be placed in the `public/` directory.
 
-The project includes [Tailwind CSS](https://starlight.astro.build/guides/css-and-tailwind/#tailwind-css) for styling. Customize your design by modifying `src/styles/global.css`.
+The project includes [Tailwind CSS](https://starlight.astro.build/guides/css-and-tailwind/#tailwind-css) for styling. Customize by modifying `src/styles/global.css`.
 
-## 🧞 Commands
+## Commands
 
 All commands are run from the root of the project, from a terminal:
 
@@ -47,7 +77,3 @@ All commands are run from the root of the project, from a terminal:
 | `npm run preview`         | Preview your build locally, before deploying     |
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
