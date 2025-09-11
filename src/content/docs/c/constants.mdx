@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-Meantonal provides an assortment of constant `Map1d` and `Map2d` matrices to use with mapping operations. Most built-in functions in Meantonal abstract over the specific maps being used, so few users will ever need to touch them.
+Meantonal provides an assortment of constant `Map1D` and `Map2D` matrices to use with mapping operations. Most built-in functions in Meantonal abstract over the specific maps being used, so few users will ever need to touch them.
 
 They are of particular utility, however, for people playing with tuning systems other than 12-tone equal temperament, or building graphical visualisations of generalised keyboard layouts.
 
@@ -14,12 +14,16 @@ They are of particular utility, however, for people playing with tuning systems 
 These maps send any `Pitch` or `Interval` to its representation as EDO-steps in a given equal temperament. Intuitively, you can think of them as defining the respect size of whole and half steps after the map. In 12TET, a whole step is two half steps, therefore $[2, 1]$ is the matrix that projects the Meantonal space onto 12TET.
 
 ```c
-const Map1d ET7 = {1, 1};
-const Map1d ET12 = {2, 1};
-const Map1d ET19 = {3, 2};
-const Map1d ET31 = {5, 3};
-const Map1d ET50 = {5, 3};
-const Map1d ET55 = {5, 4};
+const Map1D EDO7 = {1, 1};
+const Map1D EDO12 = {2, 1};
+const Map1D EDO17 = {3, 1};
+const Map1D EDO19 = {3, 2};
+const Map1D EDO22 = {4, 1};
+const Map1D EDO31 = {5, 3};
+const Map1D EDO50 = {5, 3};
+const Map1D EDO53 = {9, 4};
+const Map1D EDO55 = {5, 4};
+const Map1D EDO81 = {13, 8};
 ```
 
 ## Basis Changes
@@ -31,8 +35,8 @@ These maps send any `Pitch` to its coordinates in the new basis, or vice versa.
 These two maps can be used to go to and from the [Wicki-Hayden](https://en.wikipedia.org/wiki/Wicki%E2%80%93Hayden_pitch_layout) layout:
 
 ```c
-const Map2d WICKI_TO = {1, -3, 0, 1};
-const Map2d WICKI_FROM = {1, 3, 0, 1};
+const Map2D WICKI_TO = {1, -3, 0, 1};
+const Map2D WICKI_FROM = {1, 3, 0, 1};
 ```
 
 ### Generators
@@ -40,8 +44,8 @@ const Map2d WICKI_FROM = {1, 3, 0, 1};
 These two maps can be used to go to and from a grid where the x-axis increments by perfect 5th, and the y-axis by octave.
 
 ```c
-const Map2d GENERATORS_TO = {2, -5, -1, 3};
-const Map2d GENERATORS_FROM = {3, 5, 1, 2};
+const Map2D GENERATORS_TO = {2, -5, -1, 3};
+const Map2D GENERATORS_FROM = {3, 5, 1, 2};
 ```
 
 This is potentially useful when calculating concrete pitches from Meantonal's abstract `Pitch` vectors in non-EDO tuning systems such as quarter comma meantone, where there are an infinite number of distinct pitches in the system, since it is **generated** entirely by its fifth and octave (hence the name of this map).

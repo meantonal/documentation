@@ -37,13 +37,6 @@ https://tailwindcss.com/docs/adding-custom-styles#using-custom-css
     gap: 0.5rem;
 }
 
-a.site-title>img {
-    position: relative;
-    width: 1.8rem;
-    height: 8rem;
-    top: 1.5rem;
-}
-
 a.site-title>span {
     color: var(--sl-color-white);
 }
