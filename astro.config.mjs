@@ -13,6 +13,7 @@ export default defineConfig({
   },
   integrations: [
     starlight({
+      routeMiddleware: './src/routeData.ts',
       title: "Meantonal",
       logo: {
         src: "./src/assets/logo.svg",
