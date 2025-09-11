@@ -22,7 +22,7 @@ export const { getStaticPaths, GET } = OGImageRoute({
       description: page.data.description,
       // Customize various colors and add a border.
       logo: {
-        path: './src/assets/logo.svg',
+        path: './src/assets/logo.png',
       },
       bgGradient: [[24, 24, 27]],
       border: { color: [63, 63, 70], width: 20 },
