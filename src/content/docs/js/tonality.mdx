@@ -2,7 +2,7 @@
 title: TonalContext
 description: An overview of the TonalContext class and its methods.
 sidebar:
-  order: 3
+  order: 4
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -47,7 +47,7 @@ You can create a `TonalContext` directly via the class constructor function, fro
 ```ts
 let context = new TonalContext(2, 1); // D major
 
-let p = Pitch.fromSPN("F4");
+let p = SPN.toPitch("F4");
 p.snapTo(context); // F#4;
 ```
 
@@ -62,7 +62,7 @@ The more intuitive way to initialise a `TonalContext`. Takes the name of the ton
 ```ts
 let context = TonalContext.fromStrings("G", "minor");
 
-let p = Pitch.fromSPN("B4");
+let p = SPN.toPitch("B4");
 p.snapTo(context); // Bb4
 ```
 
@@ -87,13 +87,13 @@ Returns the scale degree (0-indexed, such that the tonic is 0) of the passed in 
 ```ts
 let context = TonalContext.fromStrings("C", "major");
 
-let p = Pitch.fromSPN("C4");
+let p = SPN.toPitch("C4");
 context.degreeNumber(p); // 0
 
-p = Pitch.fromSPN("D4");
+p = SPN.toPitch("D4");
 context.degreeNumber(p); // 1
 
-p = Pitch.fromSPN("D#4");
+p = SPN.toPitch("D#4");
 context.degreeNumber(p); // still 1 (just an altered variant)
 ```
 
@@ -111,13 +111,13 @@ Returns the scale degree alteration represented by a `Pitch` in the current `Ton
 ```ts
 let context = TonalContext.fromStrings("G", "minor");
 
-let p = Pitch.fromSPN("Bb4")
+let p = SPN.toPitch("Bb4")
 context.degreeAlteration(p); // 0, Bb is diatonic in D minor
 
-p = Pitch.fromSPN("B4")
+p = SPN.toPitch("B4")
 context.degreeAlteration(p); // 1, B is raised in D minor
 
-p = Pitch.fromSPN("Bbb4")
+p = SPN.toPitch("Bbb4")
 context.degreeAlteration(p); // -2, Bbb is too flat for this context
 ```
 
@@ -149,7 +149,7 @@ the current `TonalContext`. Returns the result as a new `Pitch`:
 
 ```ts
 let context = TonalContext.fromStrings("C", "major");
-let p = Pitch.fromSPN("F#4");
+let p = SPN.toPitch("F#4");
 
 p = context.snapDiatonic(p); // p now points to F4
 ```

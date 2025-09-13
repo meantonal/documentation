@@ -1,0 +1,31 @@
+---
+title: Parse
+description: An overview of the SPN, LilyPond, Helmholtz and ABC parser classes.
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Meantonal provides some classes to parse to and from common formats:
+
+- `SPN` handles [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation)
+- `LilyPond` handles [LilyPond](https://lilypond.org/) strings.
+- `Helmholtz` handles [Helmholtz Pitch Notation](https://en.wikipedia.org/wiki/Helmholtz_pitch_notation).
+- `ABC` handles [ABC notation](https://en.wikipedia.org/wiki/ABC_notation).
+
+Each provides static `toPitch` and `fromPitch` methods to convert between strings and [`Pitch`](/js/pitch) vectors.
+
+Using `SPN`, here's an example usage:
+
+```ts
+let p = SPN.toPitch("C#4");
+
+SPN.fromPitch(p); // "C#4");
+```
+
+<Aside type="tip" title="Note" icon="information">
+
+These helper classes are not robust enough to be used to parse LilyPond or ABC files directly. They are just for enterring and printing `Pitch` names in familiar formats.
+
+</Aside>

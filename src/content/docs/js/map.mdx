@@ -88,7 +88,7 @@ Carries out the mapping operation on the passed in vector. Result will be a numb
 
 ```ts
 let A = new Map(5, 3); // 31EDO mapping matrix
-let p = Pitch.fromSPN("G4");
+let p = SPN.toPitch("G4");
 
 A.map(p); // sends p to 18, essentially a MIDI style mapping for 31EDO
 ```
@@ -119,7 +119,7 @@ Carries out the mapping operation on the passed in vector. Result will be a gene
 
 ```ts
 let A = new Map2D(2, -5, -1, 3); // basis change: (w, h) => (P5, P8)
-let p = Pitch.fromSPN("E5");
+let p = SPN.toPitch("E5");
 
 A.map(p) // (4, 3)
 ```
@@ -180,10 +180,10 @@ Returns the frequency of the passed-in `Pitch` in Hertz.
 ```ts
 const T = TuningMap.fromEDO(12, "A4", 440);
 
-let p = Pitch.fromSPN("A4");
+let p = SPN.toPitch("A4");
 T.toHz(p); // 440
 
-p = Pitch.fromSPN("A5");
+p = SPN.toPitch("A5");
 T.toHz(p); // 880
 ```
 
@@ -193,11 +193,26 @@ T.toHz(p); // 880
 toCents(m: Interval): number;
 ```
 
-Returns the width of the passed in interval in cents.
+Returns the width of the passed in `Interval` in cents.
 
 ```ts
 const T = TuningMap.fromEDO(12);
 
 let m = Interval.fromName("M3");
 T.toCents(m); // 400
+```
+
+### `toRatio`
+
+```ts
+toRatio(m: Interval): number;
+```
+
+returns the ratio of the passed `Interval` as a decimal number.
+
+```ts
+const T = TuningMap.fromEDO(31);
+
+let m = Interval.fromName("A6");
+T.toRatio(m); // 1.7489046221194973
 ```

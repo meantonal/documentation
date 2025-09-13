@@ -2,14 +2,14 @@
 title: Pitch
 description: An overview of the Pitch class and its methods.
 sidebar:
-  order: 1
+  order: 2
 ---
 
 This page details the `Pitch` class and all its methods.
 
 ## Creating Pitches
 
-There are three main ways to create `Pitch` vectors from scratch. Using the [class constructor](#class-constructor), or using the static methods [`Pitch.fromSPN`](#pitchfromspn) or [`Pitch.fromChroma`](#pitchfromchroma).
+There are three main ways to create `Pitch` vectors from scratch. Using the [class constructor](#class-constructor), using the static method [`Pitch.fromChroma`](#pitchfromchroma), or using static methods on a [parse class](/js/parse) to parse a `Pitch` from a string format like SPN or LilyPond.
 
 ### Class Constructor
 
@@ -21,21 +21,6 @@ Internally a pitch is defined as some number of whole steps and some number of h
 
 ```ts
 let p = new Pitch(25, 10); // coordinates for C4
-
-p.w; // 25
-p.h; // 10
-```
-
-### `fromSPN`
-
-```ts
-static fromSPN(spn: string): Pitch;
-```
-
-It's often more convenient to initialise a `Pitch` from a string. `Pitch.fromSPN` parses a `Pitch` from [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation):
-
-```ts
-let p = fromSPN("C4");
 
 p.w; // 25
 p.h; // 10
@@ -69,19 +54,19 @@ get midi(): number;
 The standard MIDI number of a `Pitch`. Throws an error if outside of the MIDI range of $\sf{C}_{-1}$ to $\sf{G}_9$:
 
 ```ts
-let p = Pitch.fromSPN("C4");
+let p = SPN.toPitch("C4");
 p.midi; // 60
 
-p = Pitch.fromSPN("C-1");
+p = SPN.toPitch("C-1");
 p.midi; // 0
 
-p = Pitch.fromSPN("G9");
+p = SPN.toPitch("G9");
 p.midi; // 127
 
-p = Pitch.fromSPN("A-2");
+p = SPN.toPitch("A-2");
 p.midi; // Error: Outside of standard MIDI range: -3
 
-p = Pitch.fromSPN("A9");
+p = SPN.toPitch("A9");
 p.midi; // Error: Outside of standard MIDI range: 129
 ```
 
@@ -94,10 +79,10 @@ get chroma(): number;
 The signed distance of a `Pitch` from C in perfect fifths.
 
 ```ts
-let p = Pitch.fromSPN("D3");
+let p = SPN.toPitch("D3");
 p.chroma; // 2, because C G D => 0 1 2
 
-p = Pitch.fromSPN("Eb5");
+p = SPN.toPitch("Eb5");
 p.chroma; // -3, because Eb Bb F C => -3 -2 -1 0
 ```
 
@@ -110,10 +95,10 @@ get pc7(): number;
 The 0-indexed 7-tone pitch class of a `Pitch`. Equivalent to a numerical representation of its letter name, where C is 0:
 
 ```ts
-let p = Pitch.fromSPN("C4");
+let p = SPN.toPitch("C4");
 p.pc7; // 0
 
-p = Pitch.fromSPN("F4");
+p = SPN.toPitch("F4");
 p.pc7; // 3
 ```
 
@@ -126,13 +111,13 @@ get pc12(): number;
 The 12-tone pitch class of a note. C is 0.
 
 ```ts
-let p = Pitch.fromSPN("C4");
+let p = SPN.toPitch("C4");
 p.pc12; // 0
 
-p = Pitch.fromSPN("E4");
+p = SPN.toPitch("E4");
 p.pc12; // 4
 
-p = Pitch.fromSPN("Fb4");
+p = SPN.toPitch("Fb4");
 p.pc12; // also 4, due to enharmonicity in 12TET
 ```
 
@@ -145,7 +130,7 @@ get letter(): string;
 The letter component of a `Pitch` vector's standard name.
 
 ```ts
-let p = Pitch.fromSPN("E4");
+let p = SPN.toPitch("E4");
 p.letter; // "E"
 ```
 
@@ -164,13 +149,13 @@ The accidental component of a `Pitch` vector's standard name, expressed as a sig
 - etc. for any arbitrary accidental.
 
 ```ts
-let p = Pitch.fromSPN("Fx");
+let p = SPN.toPitch("Fx");
 p.accidental; // 2
 
-p = Pitch.fromSPN("Eb");
+p = SPN.toPitch("Eb");
 p.accidental; // -1
 
-p = Pitch.fromSPN("Abbb");
+p = SPN.toPitch("Abbb");
 p.accidental; // -3
 ```
 
@@ -183,21 +168,8 @@ get octave(): number;
 The octave number of a `Pitch` (in [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) numbering).
 
 ```ts
-let p = Pitch.fromSPN("F4");
+let p = SPN.toPitch("F4");
 p.octave; // 4
-```
-
-### `SPN`
-
-```ts
-get SPN(): string;
-```
-
-The [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) name of a `Pitch` as a string.
-
-```ts
-let p = Pitch.fromSPN("Abb5");
-p.SPN; // "Abb5"
 ```
 
 ### `isEqual`
@@ -209,15 +181,15 @@ isEqual(p: Pitch): boolean;
 Returns true if and only if the passed in `Pitch` vector and the current vector are identical. Note that this does **not** mean "are enharmonically equivalent in 12TET", or "have the same pitch chroma": they must literally hold the same coordinates.
 
 ```ts
-let p = Pitch.fromSPN("C4");
-let q = Pitch.fromSPN("C5");
+let p = SPN.toPitch("C4");
+let q = SPN.toPitch("C5");
 
 p.isEqual(q); // false
 
-q = Pitch.fromSPN("B3");
+q = SPN.toPitch("B3");
 p.isEqual(q); // false
 
-q = Pitch.fromSPN("C4");
+q = SPN.toPitch("C4");
 p.isEqual(q); // true
 ```
 
@@ -230,14 +202,14 @@ isEnharmonic(p: Pitch, edo?: number): boolean;
 Returns true if the passed in `Pitch` is enharmonic to the current `Pitch` in the passed in EDO tuning. If no second argument is passed this method defaults to 12TET. Notes will still register as enharmonic if they are in different octaves.
 
 ```ts
-let p = Pitch.fromSPN("C#4");
-let q = Pitch.fromSPN("Db4");
+let p = SPN.toPitch("C#4");
+let q = SPN.toPitch("Db4");
 
 p.isEnharmonic(q); // true (in 12TET)
 p.isEnharmonic(q, 31); // false (in 31EDO)
 
-p = Pitch.fromSPN("Gbb4");
-q = Pitch.fromSPN("Ex4");
+p = SPN.toPitch("Gbb4");
+q = SPN.toPitch("Ex4");
 
 p.isEnharmonic(q); // false (in 12TET)
 p.isEnharmonic(q, 31); // true (in 31EDO)
@@ -254,13 +226,13 @@ Returns the scale degree number (0-indexed, such that the tonic degree is 0) rep
 ```ts
 let context = TonalContext.fromStrings("C", "major");
 
-let p = Pitch.fromSPN("C4");
+let p = SPN.toPitch("C4");
 p.degreeIn(context); // 0
 
-p = Pitch.fromSPN("D4");
+p = SPN.toPitch("D4");
 p.degreeIn(context); // 1
 
-p = Pitch.fromSPN("D#4");
+p = SPN.toPitch("D#4");
 p.degreeIn(context); // still 1 (just an altered variant)
 ```
 
@@ -278,13 +250,13 @@ Returns the alteration represented by the `Pitch` in the passed-in [`TonalContex
 ```ts
 let context = TonalContext.fromStrings("G", "minor");
 
-let p = Pitch.fromSPN("Bb4")
+let p = SPN.toPitch("Bb4")
 p.alterationIn(context); // 0, Bb is diatonic in D minor
 
-p = Pitch.fromSPN("B4")
+p = SPN.toPitch("B4")
 p.alterationIn(context); // 1, B is raised in D minor
 
-p = Pitch.fromSPN("Bbb4")
+p = SPN.toPitch("Bbb4")
 p.alterationIn(context); // -2, Bbb is too flat for this context
 ```
 
@@ -301,8 +273,8 @@ intervalTo(p: Pitch): Interval;
 Returns the [`Interval`](/js/interval) from the current Pitch to another passed-in vector. Often a more convenient way to access [`Interval.between`](/js/interval/#intervalbetween)
 
 ```ts
-let p = Pitch.fromSPN("C4");
-let q = Pitch.fromSPN("E4");
+let p = SPN.toPitch("C4");
+let q = SPN.toPitch("E4");
 
 let m = p.intervalTo(q); // m now holds a major third Interval
 let n = Interval.between(p, q); // equivalent
@@ -317,8 +289,8 @@ transposeReal(m: Interval): Pitch;
 Transposes the underlying `Pitch` by the passed in Interval vector. Returns the transposed `Pitch` as a new vector:
 
 ```ts
-let p = Pitch.fromSPN("C4");
-let q = Pitch.fromSPN("E4");
+let p = SPN.toPitch("C4");
+let q = SPN.toPitch("E4");
 let m = Interval.fromName("M3");
 
 p = p.transposeReal(m);
@@ -331,11 +303,11 @@ p.isEqual(q); // true
 invert(axis: Axis): Pitch;
 ```
 
-Invert a `Pitch` about the passed in [`Axis`](/js/axis). An `Axis` is created from two `Pitches`, either passed directly via its [constructor function](/js/axis/#class-constructor), or via [`Axis.fromSPN()`](/js/axis/#axisfromspn) using two SPN strings. Returns the inverted Pitch as a new vector.
+Invert a `Pitch` about the passed in [`Axis`](/js/axis). An `Axis` is created from two `Pitches` that will be mapped to each other by the inversion across it. Returns the inverted Pitch as a new vector.
 
 ```ts
 let axis = Axis.fromSPN("C4", "G4");
-let p = Pitch.fromSPN("Db4");
+let p = SPN.toPitch("Db4");
 
 p = p.invert(axis); // p now points to F#4
 ```
@@ -351,7 +323,7 @@ the passed-in [`TonalContext`](/js/tonality). Returns the result as a new `Pitch
 
 ```ts
 let context = TonalContext.fromStrings("C", "major");
-let p = Pitch.fromSPN("F#4");
+let p = SPN.toPitch("F#4");
 
 p = p.snapTo(context); // p now points to F4
 ```
@@ -367,7 +339,7 @@ Transposes a `Pitch` by a generic interval, snapping to diatonic values.
 
 ```ts
 let context = TonalContext.fromStrings("C", "major");
-let p = Pitch.fromSPN("F#4");
+let p = SPN.toPitch("F#4");
 
 p = p.transposeDiatonic(4, context); // p now points to C5
 ```

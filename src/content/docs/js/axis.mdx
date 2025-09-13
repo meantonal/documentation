@@ -1,0 +1,26 @@
+---
+title: Axis
+description: An overview of the Axis class, used in Pitch inversion.
+sidebar:
+  order: 6
+---
+
+The `Axis` class is used to invert [`Pitch`](/js/pitch) vectors about a fixed point via [`Pitch.invert`](/js/pitch/#invert).
+
+### Class Constructor
+
+```ts
+constructor(p: Pitch, q: Pitch);
+```
+
+An `Axis` is constructed from two `Pitch` vectors, which would be sent to each other via inversion about the resultant axis.
+
+```ts
+let axis = new Axis(
+    SPN.toPitch("C4");
+    SPN.toPitch("G4");
+);
+
+let p = SPN.toPitch("E4");
+p.invert(axis); // "Eb4"
+```
