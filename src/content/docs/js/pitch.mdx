@@ -172,6 +172,24 @@ let p = SPN.toPitch("F4");
 p.octave; // 4
 ```
 
+### `stepsTo`
+
+```ts
+stepsTo(p: Pitch): number;
+```
+
+Returns the (signed) number of diatonic steps separating a `Pitch` from another passed-in `Pitch`.
+
+```ts
+let p = SPN.toPitch("C4");
+let q = SPN.toPitch("F#4");
+
+p.stepsTo(q); // 3
+
+q = SPN.toPitch("Ab3");
+p.stepsTo(q); // -2
+```
+
 ### `isEqual`
 
 ```ts

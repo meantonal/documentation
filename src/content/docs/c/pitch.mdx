@@ -112,6 +112,14 @@ int pitch_pc12(Pitch p);
 
 Returns the 12-tone pitch class number of a `Pitch` (C is 0).
 
+### `steps_to`
+
+```c
+static inline int steps_between(Pitch p, Pitch q);
+```
+
+Returns the (signed) number of diatonic steps between two pitches. Calculated as $q - p$.
+
 ### `pitches_equal`
 
 ```c
