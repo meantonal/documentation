@@ -98,6 +98,20 @@ int pitch_midi(Pitch p);
 
 Returns the standard MIDI value for a given `Pitch`.
 
+<Aside type="caution">
+
+There is no guarantee a given pitch can be accurately represented by the MIDI standard. It is up to you to check whether the resulting number is between 0 and 127.
+
+</Aside>
+
+### `pitch_pc12`
+
+```c
+int pitch_pc12(Pitch p);
+```
+
+Returns the 12-tone pitch class number of a `Pitch` (C is 0).
+
 ### `pitches_equal`
 
 ```c

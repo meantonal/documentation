@@ -140,7 +140,7 @@ The `Map1d` type represents a $1\times2$ matrix. Its members are labelled `m0` a
 
 ```c
 typedef struct {
-    int m0, m1;
+    double m0, m1;
 } Map1d;
 ```
 
@@ -155,8 +155,8 @@ The `Map2d` type represents a $2\times2$ matrix. Its members are labelled row-fi
 
 ```c
 typedef struct {
-    int m00, m01;
-    int m10, m11;
+    double m00, m01;
+    double m10, m11;
 } Map2d;
 ```
 
@@ -164,10 +164,24 @@ Multiplying a `Map2d` matrix with a `MapVec` via [`map_to_2d`](/c/map/#map_to_2d
 
 ### `MapVec`
 
-The `MapVec` type exists to store the vectors used with a `Map1d` by [map_to_1d](/c/map/#map_to_1d) and `Map2d` by [map_to_2d](/c/map/#map_to_2d). Internally they are an alias for `Pitch`, much like `Interval` and `MirrorAxis`.
+The `MapVec` type exists to store the vectors used with a `Map1d` by [map_to_1d](/c/map/#map_to_1d) and `Map2d` by [map_to_2d](/c/map/#map_to_2d). Unlike [`Pitch`](#pitch) and [`Interval`](#interval), MapVec's fields are doubles, not integers.
 
 ```c
-typedef Pitch MapVec;
+typedef struct {
+    double x, y;
+} MapVec;
+```
+
+### `TuningMap`
+
+The `TuningMap` type holds the data needed for functions like [`to_hz`](/c/map/#to_hz) and [`to_cents`](/c/map/#to_cents) to operate on `Pitch` and `Interval` vectors. To that end, it holds a reference `Pitch` and the frequency it will be tuned to (e.g. A4 = 440Hz for concert pitch), along with a `Map1D` specifying the width of the fifth in cents, and the octave (the octave is always set as 1200 cents).
+
+```c
+typedef struct {
+    Pitch ref_pitch;
+    double ref_freq;
+    Map1D centmap;
+} TuningMap;
 ```
 
 ### `MirrorAxis`

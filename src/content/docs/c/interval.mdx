@@ -91,9 +91,17 @@ Returns the number of perfect fifths (signed) separating an `Interval` from the 
 int stepspan(Interval m);
 ```
 
-Returns the number of diatonic steps subtended by an interval. Basically the same as the standard generic interval sizes used in musical discourse, except zero-indexed so a "third" will have a stepspan of 2, not 3.
+Returns the number of diatonic steps subtended by an `Interval`. Basically the same as the standard generic interval sizes used in musical discourse, except zero-indexed so a "third" will have a stepspan of 2, not 3.
 
 This format is more amenable to basic arithmetic, and allows negative stepspans to represent descending horizontal intervals, or voice crossed vertical intervals.
+
+### `interval_pc12`
+
+```c
+int interval_pc12(Interval m);
+```
+
+Returns the 12-tone pitch class interval number of an `Interval` vector.
 
 ### `interval_quality`
 
@@ -176,22 +184,13 @@ Interval intervals_add(Interval m, Interval n);
 
 Adds two `Interval` vectors to produce a new `Interval`.
 
-<Aside type="tip">
-
-To take a difference $m - n$:
+### `intervals_subtract`
 
 ```c
-interval_between((Pitch) n, (Pitch) m);
+Interval intervals_subtract(Interval m, Interval n);
 ```
 
-is slightly faster than
-
-
-```c
-interval_add(m, interval_negate(n));
-```
-
-</Aside>
+Subtracts the second `Interval` vector from the first to produce a new `Interval`.
 
 ### `interval_simple`
 

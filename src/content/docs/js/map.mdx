@@ -2,7 +2,7 @@
 title: Map
 description: An overview of the MapVec, Map1D and Map2D classes and their associated methods methods.
 sidebar:
-  order: 5
+  order: 4
 ---
 
 The classes in this section allow arbitrary $1\times2$ or $2\times2$ matrices to be multiplied by vectors.
@@ -93,6 +93,22 @@ let p = SPN.toPitch("G4");
 A.map(p); // sends p to 18, essentially a MIDI style mapping for 31EDO
 ```
 
+### `compose`
+
+```ts
+compose(map: Map2D): Map1D;
+```
+
+Composes the `Map1D` instance with a passed in `Map2D`; essentially carries out matrix multiplication:
+
+$$
+[a_0, a_1]
+\begin{bmatrix} b_{00} & b_{01} \\ b_{10} & b_{11} \end{bmatrix}
+= [c_0, c_1]
+$$
+
+Returns a new `Map1D`. Creating new maps from the composition of existing maps can save on unnecessary computation.
+
 ## `Map2D`
 
 A `Map1D` is a $2\times2$ matrix, used to map a 2-dimensional vector to another 2-dimensional vector. Essentially effects a change of coordinate system: (see the [Learn](/learn/maps) page for a detailed explanation).
@@ -123,6 +139,23 @@ let p = SPN.toPitch("E5");
 
 A.map(p) // (4, 3)
 ```
+
+### `compose`
+
+```ts
+compose(map: Map2D): Map2D;
+```
+
+Composes the `Map2D` instance with a passed in `Map2D`; essentially carries out matrix multiplication:
+
+$$
+\begin{bmatrix} a_{00} & a_{01} \\ a_{10} & a_{11} \end{bmatrix}
+\begin{bmatrix} b_{00} & b_{01} \\ b_{10} & b_{11} \end{bmatrix}
+=
+\begin{bmatrix} c_{00} & c_{01} \\ c_{10} & c_{11} \end{bmatrix}
+$$
+
+Returns a new `Map2D`. Creating new maps from the composition of existing maps can save on unnecessary computation.
 
 ## `TuningMap`
 

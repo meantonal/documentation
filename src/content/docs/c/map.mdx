@@ -37,6 +37,22 @@ $6\rightarrow\sf{E}\flat\flat_{-1}$
 
 *and so on...*
 
+### `map_compose_1d_2d`
+
+```c
+static inline Map1D map_compose_1d_2d(Map1D A, Map2D B);
+```
+
+Composes a `Map1D` with a `Map2D`; essentially carries out matrix multiplication:
+
+$$
+[a_0, a_1]
+\begin{bmatrix} b_{00} & b_{01} \\ b_{10} & b_{11} \end{bmatrix}
+= [c_0, c_1]
+$$
+
+Returns a new `Map1D`. Creating new maps from the composition of existing maps can save on unnecessary computation.
+
 ### `map_to_2d`
 
 ```c
@@ -57,4 +73,83 @@ Pitch pitch_from_key(WickiKey k) {
 }
 ```
 
+### `map_compose_2d_2d`
 
+```c
+static inline Map2D map_compose_2d_2d(Map2D A, Map2D B);
+```
+
+Composes a `Map2D` with another `Map2D`; essentially carries out matrix multiplication:
+
+$$
+\begin{bmatrix} a_{00} & a_{01} \\ a_{10} & a_{11} \end{bmatrix}
+\begin{bmatrix} b_{00} & b_{01} \\ b_{10} & b_{11} \end{bmatrix}
+=
+\begin{bmatrix} c_{00} & c_{01} \\ c_{10} & c_{11} \end{bmatrix}
+$$
+
+Returns a new `Map2D`. Creating new maps from the composition of existing maps can save on unnecessary computation.
+
+### `tuning_map_from_fifth`
+
+```c
+TuningMap tuning_map_from_fifth(double fifth, Pitch ref_pitch, double ref_freq);
+```
+
+Construct a [`TuningMap`](/c/types/#tuningmap) from the width of the fifth in the target tuning system in cents, along with a reference [`Pitch`](/c/types/#pitch) and its frequency in the tuning in Hertz (e.g. A4 = 440Hz).
+
+### `tuning_map_from_edo`
+
+```c
+TuningMap tuning_map_from_edo(int edo, Pitch ref_pitch, double ref_freq);
+```
+
+Construct a [`TuningMap`](/c/types/#tuningmap) for an EDO tuning system from the number of parts the octave will be divided into, along with a reference [`Pitch`](/c/types/#pitch) and its frequency in the tuning in Hertz (e.g. A4 = 440Hz).
+
+### `to_hz`
+
+```c
+double to_hz(Pitch p, TuningMap T);
+```
+
+Returns the frequency of a [`Pitch`](/c/types/#pitch) in a given tuning in Hertz.
+
+```c
+Pitch p;
+pitch_from_spn("C4");
+TuningMap T = tuning_map_from_edo(12, "C4", CONCERT_C4);
+
+to_hz(p); // 261.6255653
+```
+
+### `to_ratio`
+
+```c
+double to_ratio(Interval m, TuningMap T);
+```
+
+Returns a decimal approximation of the ratio of an [`Interval`](/c/types/#interval) in a given tuning system.
+
+```c
+Interval m;
+interval_from_name("A6");
+TuningMap T = tuning_map_from_edo(31, "C4", CONCERT_C4);
+
+to_ratio(m, T); // 1.7489046221194973 (very close to 7/4)
+```
+
+### `to_cents`
+
+```c
+double to_cents(Interval m, TuningMap T);
+```
+
+Returns the width of an [`Interval`](/c/types/#interval) in a given tuning system in cents.
+
+```c
+Interval m;
+interval_from_name("P5");
+TuningMap T = tuning_map_from_edo(31, "C4", CONCERT_C4);
+
+to_cents(m, T); // 696.7741935483871
+```

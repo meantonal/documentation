@@ -50,3 +50,8 @@ const Map2D GENERATORS_FROM = {3, 5, 1, 2};
 
 This is potentially useful when calculating concrete pitches from Meantonal's abstract `Pitch` vectors in non-EDO tuning systems such as quarter comma meantone, where there are an infinite number of distinct pitches in the system, since it is **generated** entirely by its fifth and octave (hence the name of this map).
 
+## Miscellaneous
+
+### `CONCERT_C`
+
+This constant is useful when creating a [`TuningMap`](/c/types/#tuningmap). It sets a value of C4 that corresponds to A4 = 440Hz in 12-tone equal temperament. The frequency of all Cs thereby remains fixed in different tunings.
