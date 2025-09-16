@@ -1,0 +1,156 @@
+---
+title: Common Patterns
+description: Some common patterns to get started with Meantonal.
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Below are some Meantonal idioms worth studying to help with various musical tasks.
+
+## Ranges
+
+Patterns to iterate over ranges of `Pitch` or `Interval` vectors.
+
+### Diatonic Intervals
+
+Iterate over every interval that can occur diatonically from a unison to an octave.
+
+<Tabs>
+  <TabItem label="JavaScript">
+```js frame=none
+let m = new Interval(0, 0);
+while (m.w <= 5) {
+    while (m.h <= 2) {
+        if (!m.isDiatonic)
+            continue;
+        // do stuff with interval
+        m.h++;
+    }
+    m.w++;
+}
+```
+  </TabItem>
+  <TabItem label="C">
+```c frame=none
+Interval m = { 0, 0 };
+while (m.w <= 5) {
+    while (m.h <= 2) {
+        if (!interval_diatonic(m))
+            continue;
+        // do stuff with interval
+        m.h++;
+    }
+    m.w++;
+}
+```
+  </TabItem>
+</Tabs>
+
+### Melodic Consonances
+
+Iterate over every interval traditionally classified as a melodic consonance.
+
+<Tabs>
+  <TabItem label="JavaScript">
+```js frame=none
+let m = new Interval(0, 0);
+while (m.w <= 5) {
+    while (m.h <= 2) {
+        if (Math.abs(m.chroma) > 5 || m.stepspan == 5)
+            continue;
+        // do stuff with interval
+        m.h++;
+    }
+    m.w++;
+}
+```
+  </TabItem>
+  <TabItem label="C">
+```c frame=none
+Interval m = { 0, 0 };
+while (m.w <= 5) {
+    while (m.h <= 2) {
+        if (abs(interval_chroma(m)) > 5 || stepspan(m) == 6)
+            continue;
+        // do stuff with interval
+        m.h++;
+    }
+    m.w++;
+}
+```
+  </TabItem>
+</Tabs>
+
+### Diatonic Pitches
+
+Iterate over all a diatonic range of pitches in a key or mode.
+
+<Tabs>
+  <TabItem label="JavaScript">
+```js frame=none
+let p = SPN.toPitch("C4");
+let q = SPN.toPitch("C5");
+let ctx = TonalContext.fromStrings("C", "major");
+while (p.stepsTo(q) >= 0) {
+    // do stuff with pitch
+    p = p.transposeDiatonic(1, ctx)
+}
+```
+  </TabItem>
+  <TabItem label="C">
+```c frame=none
+Pitch p, q;
+TonalContext ctx;
+pitch_from_spn("C4", &p);
+pitch_from_spn("C5", &q);
+context_from_str("C", MAJOR, %ctx);
+while (steps_between(p, q) >= 0) {
+    // do stuff with pitch
+    p = transpose_diatonic(p, 1, ctx);
+}
+```
+  </TabItem>
+</Tabs>
+
+### Chromatic Pitches
+
+Iterate over both diatonic and chromatically altered degrees in a key within a given range.
+
+<Tabs>
+  <TabItem label="JavaScript">
+```js frame=none
+let p = SPN.toPitch("C4");
+let q = SPN.toPitch("C5");
+let ctx = TonalContext.fromStrings("C", "major");
+while (p.w <= q.w) {
+    while (p.h <= q.h) {
+        if (Math.abs(p.alterationIn(ctx)) > 1)
+            continue;
+        // do stuff with pitch
+        p.h++;
+    }
+    p.w++;
+}
+```
+  </TabItem>
+  <TabItem label="C">
+```c frame=none
+Pitch p, q;
+TonalContext ctx;
+pitch_from_spn("C4", &p);
+pitch_from_spn("C5", &q);
+context_from_str("C", MAJOR, %ctx);
+while (p.w <= q.w) {
+    while (p.h <= q.h) {
+        if (abs(degree_alteration(p, ctx)) > 1)
+            continue;
+        // do stuff with pitch
+        p.h++;
+    }
+    p.w++;
+}
+```
+  </TabItem>
+</Tabs>

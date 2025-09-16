@@ -47,7 +47,8 @@ typedef struct {
         int accidental;
     } tonic;
     enum Mode mode;
-    int chroma_offset; // offset used by internal functions to reconcile notes.
+    int chroma_offset; // offset used by internal functions to reconcile
+                       // notes.
 } TonalContext;
 
 /**
@@ -82,27 +83,39 @@ enum Alteration {
 typedef struct tnode *PitchClassSet;
 
 /**
- * The Map1d represents a 1x2 matrix for mapping Pitch vectors down to one
+ * The Map1D represents a 1x2 matrix for mapping Pitch vectors down to one
  * dimension, e.g. (2, 1) maps Pitch vectors to MIDI.
  */
 typedef struct {
-    int m0, m1;
-} Map1d;
+    double m0, m1;
+} Map1D;
 
 /**
- * The Map2d represents a 2x2 matrix to map from one 2d vector representation to
+ * The Map2D represents a 2x2 matrix to map from one 2D vector representation to
  * another. Useful for changing coordinate basis for rendering alternative
  * isomorphic keyboard layouts.
  */
 typedef struct {
-    int m00, m01;
-    int m10, m11;
-} Map2d;
+    double m00, m01;
+    double m10, m11;
+} Map2D;
 
 /**
- * This type is reserved for operations using Map2d matrices.
+ * This type is reserved for operations using Map2D matrices.
  */
-typedef Pitch MapVec;
+typedef struct {
+    double x, y;
+} MapVec;
+
+/**
+ * The TuningMap type is used to render frequencies, cent values and ratios
+ * from Pitch and Interval vectors.
+ */
+typedef struct {
+    Pitch ref_pitch;
+    double ref_freq;
+    Map1D centmap;
+} TuningMap;
 
 /**
  * This type is used with functions that invert Pitches about a fixed point.
@@ -121,17 +134,11 @@ typedef struct {
     int octave;
 } StandardPitch;
 
-extern const Map1d ET7, ET12, ET19, ET31, ET50, ET55;
-extern const Map2d WICKI_TO, WICKI_FROM, GENERATORS_TO, GENERATORS_FROM;
+extern const Map1D EDO7, EDO12, EDO17, EDO19, EDO22, EDO31, EDO50, EDO53, EDO55,
+    EDO81;
+extern const Map2D WICKI_TO, WICKI_FROM, GENERATORS_TO, GENERATORS_FROM;
 
-/**
- * Parses Scientific Pitch Notation to generate a pitch.
- * @param out
- * Pointer to a Pitch to store the parsed vector.
- * @return
- * 0 means nothing went wrong.
- */
-int pitch_from_spn(const char *s, Pitch *out);
+extern const double CONCERT_C4;
 
 /**
  * Creates a Pitch vector from a specified chroma (signed distance from C in
@@ -176,6 +183,19 @@ static inline int pitch_octave(Pitch p) {
 static inline int pitch_midi(Pitch p) { return 2 * p.w + p.h; }
 
 /**
+ * Returns the 12-tone pitch class of a given Pitch.
+ * C is 0.
+ */
+static inline int pitch_pc12(Pitch p) { return pitch_midi(p) % 12; }
+
+/**
+ * Returns the (signed) distance in diatonic steps between two Pitch vectors.
+ */
+static inline int steps_between(Pitch p, Pitch q) {
+    return (q.w + q.h) - (p.w + p.h);
+}
+
+/**
  * Check whether two pitches are the same.
  * Enharmonic pitches are not considered the same, use pitch_enharmonic().
  */
@@ -209,27 +229,6 @@ static inline Pitch transpose_real(Pitch p, Interval m) {
  */
 static inline MirrorAxis axis_create(Pitch p, Pitch q) {
     return (MirrorAxis){.w = p.w + q.w, .h = p.h + q.h};
-}
-
-/**
- * Creates a MirrorAxis about which to invert Pitch vectors from two input SPN
- * strings representing Pitches that will map to each other.
- * @param out
- * Pointer to a MirrorAxis to store the resulting axis.
- * @return
- * 0 means nothing went wrong.
- */
-static inline int axis_from_spn(char *p_str, char *q_str, MirrorAxis *out) {
-    Pitch p, q;
-
-    if (pitch_from_spn(p_str, &p))
-        return 1;
-    if (pitch_from_spn(q_str, &q))
-        return 1;
-
-    out->w = p.w + q.w;
-    out->h = p.h + q.h;
-    return 0;
 }
 
 /**
@@ -290,6 +289,14 @@ static inline Interval interval_between(Pitch p, Pitch q) {
 static inline int interval_chroma(Interval m) { return (2 * m.w) - (5 * m.h); }
 
 /**
+ * Returns true if the Interval can occur diatonically (is found within the
+ * major scale)
+ */
+static inline bool interval_diatonic(Interval m) {
+    return abs(interval_chroma(m)) < 7;
+}
+
+/**
  * Check whether two intervals are the same.
  * Enharmonic intervals are not considered the same, use interval_enharmonic().
  */
@@ -314,6 +321,11 @@ static inline bool intervals_enharmonic(Interval m, Interval n, int edo) {
 static inline int stepspan(Interval m) { return m.w + m.h; }
 
 /**
+ * Get the 12-tone pitch class interval number of an Interval.
+ */
+static inline int interval_pc12(Interval m) { return (2 * m.w + m.h) % 12; }
+
+/**
  * 0 is perfect.
  * 1/-1 are major/minor.
  * 2/-2 are augmente/diminished.
@@ -333,6 +345,13 @@ static inline int interval_quality(Interval m) {
 }
 
 /**
+ * Returns the standard name of an interval as a string.
+ * You must pass a char buf[8] to store the result, which is returned via an
+ * out-param.
+ */
+void interval_name(Interval m, char *out);
+
+/**
  * Returns the passed in interval with its values negated.
  * An ascending major 3rd becomes a descending major 3rd.
  */
@@ -341,12 +360,17 @@ static inline Interval interval_negate(Interval m) {
 }
 
 /**
- * Returns the sum of two intervals
- * To take the difference, use interval_between((Pitch)m, n)
- * rather than intervals_add(interval_negate(m), n), as it's faster.
+ * Returns the sum of two intervals.
  */
 static inline Interval intervals_add(Interval m, Interval n) {
     return (Interval){.w = m.w + n.w, .h = m.h + n.h};
+}
+
+/**
+ * Returns the difference of two intervals.
+ */
+static inline Interval intervals_subtract(Interval m, Interval n) {
+    return (Interval){.w = m.w - n.w, .h = m.h - n.h};
 }
 
 /**
@@ -471,20 +495,162 @@ PitchClassSet pc_set_difference(PitchClassSet a, PitchClassSet b);
  * Most built-in functions that take Pitches and return integers perform
  * this operation somewhere along the way.
  */
-static inline int map_to_1d(MapVec p, Map1d T) {
-    return T.m0 * p.w + T.m1 * p.h;
+static inline double map_to_1d(MapVec v, Map1D T) {
+    return T.m0 * v.x + T.m1 * v.y;
 }
 
 /**
- * Maps to a 2d MapVec type using a 2x2 matrix.
+ * Composes a Map1D with a Map2D to create a single Map1D operation.
+ * Useful for avoiding unneccesary repeated computation.
+ */
+static inline Map1D map_compose_1d_2d(Map1D A, Map2D B) {
+    return (Map1D){.m0 = A.m0 * B.m00 + A.m1 * B.m10,
+                   .m1 = A.m0 * B.m01 + A.m1 * B.m11};
+}
+
+/**
+ * Maps to a 2D MapVec type using a 2x2 matrix.
  * You must cast the result to a Pitch or Interval if you intend to use it as
  * one.
  */
-static inline MapVec map_to_2d(MapVec p, Map2d T) {
-    return (MapVec){.w = T.m00 * p.w + T.m01 * p.h,
-                    .h = T.m10 * p.w + T.m11 * p.h};
+static inline MapVec map_to_2d(MapVec v, Map2D T) {
+    return (MapVec){.x = T.m00 * v.x + T.m01 * v.y,
+                    .y = T.m10 * v.x + T.m11 * v.y};
 }
 
+/**
+ * Composes a Map2D with another Map2D to create a single Map2D composite.
+ * Useful for avoiding unnecessary repeated computation.
+ */
+static inline Map2D map_compose_2d_2d(Map2D A, Map2D B) {
+    return (Map2D){.m00 = A.m00 * B.m00 + A.m01 * B.m10,
+                   .m01 = A.m00 * B.m01 + A.m01 * B.m11,
+                   .m10 = A.m10 * B.m00 + A.m11 * B.m10,
+                   .m11 = A.m10 * B.m01 + A.m11 * B.m11};
+}
+
+/**
+ * Creates a TuningMap from the width of the perfect fifth in cents in the
+ * target tuning system.
+ * Also required a reference Pitch and frequency for that Pitch.
+ */
+TuningMap tuning_map_from_fifth(double fifth, Pitch ref_pitch, double ref_freq);
+
+/**
+ * Creates a TuningMap for an EDO tuning system from the number of parts the
+ * octave is to be divided into.
+ * Also required a reference Pitch and frequency for that Pitch.
+ */
+TuningMap tuning_map_from_edo(int edo, Pitch ref_pitch, double ref_freq);
+
+/**
+ * Returns the frequency of a Pitch when rendered in the tuning system defined
+ * by the passed-in TuningMap.
+ */
+double to_hz(Pitch p, TuningMap T);
+
+/**
+ * Returns the ratio of an Interval when rendered in the tuning system defined
+ * by the passed_in TuningMap.
+ */
+double to_ratio(Interval m, TuningMap T);
+
+/**
+ * Returns the size on an Interval in cents when rendered in the tuning system
+ * defined by the passed-in TuningMap.
+ */
+double to_cents(Interval m, TuningMap T);
+
+/**
+ * Parses Scientific Pitch Notation to generate a pitch.
+ * @param out
+ * Pointer to a Pitch to store the parsed vector.
+ * @return
+ * 0 means nothing went wrong.
+ */
+int pitch_from_spn(const char *s, Pitch *out);
+
+/**
+ * Parses a LilyPond pitch name to generate a pitch.
+ * @param out
+ * Pointer to a Pitch to store the parsed vector.
+ * @return
+ * 0 means nothing went wrong.
+ */
+int pitch_from_lily(const char *s, Pitch *out);
+
+/**
+ * Parses a Helmholtz pitch name to generate a pitch.
+ * @param out
+ * Pointer to a Pitch to store the parsed vector.
+ * @return
+ * 0 means nothing went wrong.
+ */
+int pitch_from_helmholtz(const char *s, Pitch *out);
+
+/**
+ * Parses an ABC note name to generate a pitch.
+ * @param out
+ * Pointer to a Pitch to store the parsed vector.
+ * @return
+ * 0 means nothing went wrong.
+ */
+int pitch_from_abc(const char *s, Pitch *out);
+
+/**
+ * Returns the SPN name of a Pitch as a string.
+ * You must pass a char buf[8] to store the result, which is returned via an
+ * out-param.
+ */
+void pitch_spn(Pitch p, char *out);
+
+/**
+ * Returns the LilyPond note name of a Pitch as a string.
+ * You must pass a char buf[16] to store the result, which is returned via an
+ * out-param.
+ * Will truncate anything requiring accidentals more remote than quadruple
+ * sharps/flats, or requiring more than 6 's or ,s to print.
+ */
+void pitch_lily(Pitch p, char *out);
+
+/**
+ * Returns the Helmholtz note name of a Pitch as a string.
+ * You must pass a char buf[16] to store the result, which is returned via an
+ * out-param.
+ * Will truncate anything requiring accidentals more remote than quadruple
+ * sharps/flats, or requiring more than 6 's or ,s to print.
+ */
+void pitch_helmholtz(Pitch p, char *out);
+
+/**
+ * Returns the ABC note name of a Pitch as a string.
+ * You must pass a char buf[16] to store the result, which is returned via an
+ * out-param.
+ * Will truncate anything requiring accidentals more remote than quadruple
+ * sharps/flats, or requiring more than 6 's or ,s to print.
+ */
+void pitch_abc(Pitch p, char *out);
+
+/**
+ * Creates a MirrorAxis about which to invert Pitch vectors from two input SPN
+ * strings representing Pitches that will map to each other.
+ * @param out
+ * Pointer to a MirrorAxis to store the resulting axis.
+ * @return
+ * 0 means nothing went wrong.
+ */
+static inline int axis_from_spn(char *p_str, char *q_str, MirrorAxis *out) {
+    Pitch p, q;
+
+    if (pitch_from_spn(p_str, &p))
+        return 1;
+    if (pitch_from_spn(q_str, &q))
+        return 1;
+
+    out->w = p.w + q.w;
+    out->h = p.h + q.h;
+    return 0;
+}
 #endif // MEANTONAL_HEADER
 
 // -----------------------------------------
@@ -493,72 +659,28 @@ static inline MapVec map_to_2d(MapVec p, Map2d T) {
 
 #ifdef MEANTONAL
 #undef MEANTONAL
+#include <math.h>
+#include <stdint.h>
+#include <stdio.h>
 
-const Map1d ET7 = {1, 1};
-const Map1d ET12 = {2, 1};
-const Map1d ET19 = {3, 2};
-const Map1d ET31 = {5, 3};
-const Map1d ET50 = {5, 3};
-const Map1d ET55 = {5, 4};
+const Map1D EDO7 = {1, 1};
+const Map1D EDO12 = {2, 1};
+const Map1D EDO17 = {3, 1};
+const Map1D EDO19 = {3, 2};
+const Map1D EDO22 = {4, 1};
+const Map1D EDO31 = {5, 3};
+const Map1D EDO50 = {5, 3};
+const Map1D EDO53 = {9, 4};
+const Map1D EDO55 = {5, 4};
+const Map1D EDO81 = {13, 8};
 
-const Map2d WICKI_TO = {1, -3, 0, 1};
-const Map2d WICKI_FROM = {1, 3, 0, 1};
+const Map2D WICKI_TO = {1, -3, 0, 1};
+const Map2D WICKI_FROM = {1, 3, 0, 1};
 
-const Map2d GENERATORS_TO = {2, -5, -1, 3};
-const Map2d GENERATORS_FROM = {3, 5, 1, 2};
+const Map2D GENERATORS_TO = {2, -5, -1, 3};
+const Map2D GENERATORS_FROM = {3, 5, 1, 2};
 
-static const Pitch letters[7] = {
-    {4, 1}, {5, 1}, {0, 0}, {1, 0}, {2, 0}, {2, 1}, {3, 1},
-};
-
-int pitch_from_spn(const char *s, Pitch *out) {
-    const char *p = s;
-
-    // 1. letter name
-    int letter;
-    if (*p >= 'A' && *p <= 'G') {
-        letter = *p++ - 'A';
-    } else if (*p >= 'a' && *p <= 'g') {
-        letter = *p++ - 'a';
-    } else {
-        return 1; // invalid
-    }
-    out->w = letters[letter].w;
-    out->h = letters[letter].h;
-
-    // 2. accidental
-    int acc = 0;
-    while (*p == '#' || *p == 'b' || *p == 'x' || *p == 'w') {
-        switch (*p) {
-        case '#':
-            acc++;
-            break;
-        case 'b':
-            acc--;
-            break;
-        case 'x':
-            acc += 2;
-            break;
-        case 'w':
-            acc -= 2;
-            break;
-        }
-        p++;
-    }
-    out->w += acc;
-    out->h -= acc;
-
-    // 3. octave (can be negative, multi-digit)
-    char *end;
-    long oct = strtol(p, &end, 10) + 1;
-    if (end == p) {
-        return 1; // no digits found
-    }
-    out->w += (int)oct * 5;
-    out->h += (int)oct * 2;
-
-    return 0;
-}
+const double CONCERT_C4 = 261.6255653005986;
 
 Pitch pitch_from_chroma(int chroma, int octave) {
     Pitch p = {0, 0};
@@ -573,13 +695,6 @@ Pitch pitch_from_chroma(int chroma, int octave) {
         p.h += 2;
     }
     return p;
-}
-
-Pitch pitch_from_standard(StandardPitch p) {
-    return (Pitch){
-        .w = letters[p.letter].w + 5 * p.octave + p.accidental,
-        .h = letters[p.letter].h + 2 * p.octave - p.accidental,
-    };
 }
 
 static const Interval major_ints[7] = {
@@ -660,6 +775,21 @@ int interval_from_spn(const char *p_str, const char *q_str, Interval *out) {
     out->w = q.w - p.w;
     out->h = q.h - p.h;
     return 0;
+}
+
+void interval_name(Interval m, char *out) {
+    size_t cap = 8;
+
+    static const char qualities[5] = {'d', 'm', 'P', 'M', 'A'};
+    int8_t quality = interval_quality(m);
+    int8_t generic_size = stepspan(m) + 1;
+    if (quality <= 2 && quality >= -2) {
+        snprintf(out, cap, "%c%hhd", qualities[quality + 2], generic_size);
+    } else if (quality > 0) {
+        snprintf(out, cap, "%dA%hhd", quality - 1, generic_size);
+    } else {
+        snprintf(out, cap, "%hhdd%hhd", -quality - 1, generic_size);
+    }
 }
 
 int context_from_str(char *s, enum Mode mode, TonalContext *out) {
@@ -871,5 +1001,387 @@ PitchClassSet pc_set_difference(PitchClassSet a, PitchClassSet b) {
     result = pc_set_union(result, right);
 
     return result;
+}
+
+const Pitch letters[7] = {
+    {4, 1}, {5, 1}, {0, 0}, {1, 0}, {2, 0}, {2, 1}, {3, 1},
+};
+
+Pitch pitch_from_standard(StandardPitch p) {
+    return (Pitch){
+        .w = letters[p.letter].w + 5 * p.octave + p.accidental,
+        .h = letters[p.letter].h + 2 * p.octave - p.accidental,
+    };
+}
+
+int pitch_from_spn(const char *s, Pitch *out) {
+    const char *p = s;
+
+    int letter;
+    if (*p >= 'A' && *p <= 'G') {
+        letter = *p++ - 'A';
+    } else if (*p >= 'a' && *p <= 'g') {
+        letter = *p++ - 'a';
+    } else {
+        return 1; // invalid
+    }
+    out->w = letters[letter].w;
+    out->h = letters[letter].h;
+
+    int acc = 0;
+    while (*p == '#' || *p == 'b' || *p == 'x' || *p == 'w') {
+        switch (*p) {
+        case '#':
+            acc++;
+            break;
+        case 'b':
+            acc--;
+            break;
+        case 'x':
+            acc += 2;
+            break;
+        case 'w':
+            acc -= 2;
+            break;
+        }
+        p++;
+    }
+    out->w += acc;
+    out->h -= acc;
+
+    char *end;
+    long oct = strtol(p, &end, 10) + 1;
+    if (end == p) {
+        return 1; // no digits found
+    }
+    out->w += (int)oct * 5;
+    out->h += (int)oct * 2;
+
+    return 0;
+}
+
+int pitch_from_lily(const char *s, Pitch *out) {
+    const char *p = s;
+
+    int letter;
+    if (*p >= 'a' && *p <= 'g') {
+        letter = *p++ - 'a';
+    } else {
+        return 1; // invalid
+    }
+    out->w = letters[letter].w;
+    out->h = letters[letter].h;
+
+    int acc = 0;
+    while (*p == 'i' || *p == 'e') {
+        switch (*p) {
+        case 'i':
+            acc++;
+            break;
+        case 'e':
+            acc--;
+            break;
+        }
+        p += 2;
+    }
+    out->w += acc;
+    out->h -= acc;
+
+    int oct = 4;
+    while (*p == '\'' || *p == ',') {
+        switch (*p) {
+        case '\'':
+            oct++;
+            break;
+        case ',':
+            oct--;
+            break;
+        }
+        p++;
+    }
+    out->w += oct * 5;
+    out->h += oct * 2;
+
+    return 0;
+}
+
+int pitch_from_helmholtz(const char *s, Pitch *out) {
+    const char *p = s;
+
+    int letter;
+    int oct = 4;
+    if (*p >= 'A' && *p <= 'G') {
+        letter = *p++ - 'A';
+        oct--;
+    } else if (*p >= 'a' && *p <= 'g') {
+        letter = *p++ - 'a';
+    } else {
+        return 1; // invalid
+    }
+    out->w = letters[letter].w;
+    out->h = letters[letter].h;
+
+    int acc = 0;
+    while (*p == '#' || *p == 'b' || *p == 'x' || *p == 'w') {
+        switch (*p) {
+        case '#':
+            acc++;
+            break;
+        case 'b':
+            acc--;
+            break;
+        case 'x':
+            acc += 2;
+            break;
+        case 'w':
+            acc -= 2;
+            break;
+        }
+        p++;
+    }
+    out->w += acc;
+    out->h -= acc;
+
+    while (*p == '\'' || *p == ',') {
+        switch (*p) {
+        case '\'':
+            oct++;
+            break;
+        case ',':
+            oct--;
+            break;
+        }
+        p++;
+    }
+    out->w += oct * 5;
+    out->h += oct * 2;
+
+    return 0;
+}
+
+int pitch_from_abc(const char *s, Pitch *out) {
+    const char *p = s;
+
+    int acc = 0;
+    while (*p == '^' || *p == '=' || *p == '_') {
+        switch (*p) {
+        case '^':
+            acc++;
+            break;
+        case '_':
+            acc--;
+            break;
+        }
+        p++;
+    }
+    out->w = acc;
+    out->h = -acc;
+
+    int letter;
+    int oct = 6;
+    if (*p >= 'A' && *p <= 'G') {
+        letter = *p++ - 'A';
+        oct--;
+    } else if (*p >= 'a' && *p <= 'g') {
+        letter = *p++ - 'a';
+    } else {
+        return 1; // invalid
+    }
+    out->w += letters[letter].w;
+    out->h += letters[letter].h;
+
+    while (*p == '\'' || *p == ',') {
+        switch (*p) {
+        case '\'':
+            oct++;
+            break;
+        case ',':
+            oct--;
+            break;
+        }
+        p++;
+    }
+    out->w += oct * 5;
+    out->h += oct * 2;
+
+    return 0;
+}
+
+void pitch_spn(Pitch p, char *out) {
+    size_t pos = 0;
+    size_t cap = 8;
+
+    char letter = pitch_letter(p) + 'A';
+    int accidental = pitch_accidental(p);
+    int octave = pitch_octave(p);
+
+    pos += snprintf(out + pos, cap - pos, "%c", letter);
+
+    switch (accidental) {
+    case 2:
+        pos += snprintf(out + pos, cap - pos, "x");
+        break;
+    case 1:
+        pos += snprintf(out + pos, cap - pos, "#");
+        break;
+    case 0:
+        break;
+    case -1:
+        pos += snprintf(out + pos, cap - pos, "b");
+        break;
+    case -2:
+        pos += snprintf(out + pos, cap - pos, "bb");
+        break;
+    default:
+        if (accidental > 0) {
+            pos += snprintf(out + pos, cap - pos, "%d#", accidental);
+        } else {
+            pos += snprintf(out + pos, cap - pos, "%db", -accidental);
+        }
+        break;
+    }
+    pos += snprintf(out + pos, cap - pos, "%d", octave);
+}
+
+void pitch_lily(Pitch p, char *out) {
+    size_t pos = 0;
+    size_t cap = 16;
+
+    char letter = pitch_letter(p) + 'a';
+    int accidental = pitch_accidental(p);
+    if (accidental > 4)
+        accidental = 4;
+    if (accidental < -4)
+        accidental = -4;
+    int octave = pitch_octave(p) - 3;
+    if (octave > 6)
+        octave = 6;
+    if (octave < -6)
+        octave = -6;
+
+    pos += snprintf(out + pos, cap - pos, "%c", letter);
+    while (accidental) {
+        if (accidental > 0) {
+            pos += snprintf(out + pos, cap - pos, "is");
+            accidental--;
+        } else {
+            pos += snprintf(out + pos, cap - pos, "es");
+            accidental++;
+        }
+    }
+
+    while (octave) {
+        if (octave > 0) {
+            pos += snprintf(out + pos, cap - pos, "'");
+            octave--;
+        } else {
+            pos += snprintf(out + pos, cap - pos, ",");
+            octave++;
+        }
+    }
+}
+
+void pitch_helmholtz(Pitch p, char *out) {
+    size_t pos = 0;
+    size_t cap = 16;
+
+    char letter = pitch_letter(p);
+    int accidental = pitch_accidental(p);
+    if (accidental > 4)
+        accidental = 4;
+    if (accidental < -4)
+        accidental = -4;
+
+    int octave = pitch_octave(p) - 3;
+    if (octave > 6)
+        octave = 6;
+    if (octave < 0) {
+        octave++;
+        letter += 'A';
+    } else
+        letter += 'a';
+    if (octave < -6)
+        octave = -6;
+
+    pos += snprintf(out + pos, cap - pos, "%c", letter);
+
+    switch (accidental) {
+    case 2:
+        pos += snprintf(out + pos, cap - pos, "x");
+        break;
+    case 1:
+        pos += snprintf(out + pos, cap - pos, "#");
+        break;
+    case 0:
+        break;
+    case -1:
+        pos += snprintf(out + pos, cap - pos, "b");
+        break;
+    case -2:
+        pos += snprintf(out + pos, cap - pos, "bb");
+        break;
+    default:
+        if (accidental > 0) {
+            pos += snprintf(out + pos, cap - pos, "%d#", accidental);
+        } else {
+            pos += snprintf(out + pos, cap - pos, "%db", -accidental);
+        }
+        break;
+    }
+
+    while (octave) {
+        if (octave > 0) {
+            pos += snprintf(out + pos, cap - pos, "'");
+            octave--;
+        } else {
+            pos += snprintf(out + pos, cap - pos, ",");
+            octave++;
+        }
+    }
+}
+
+void pitch_abc(Pitch p, char *out) {
+    size_t pos = 0;
+    size_t cap = 16;
+
+    char letter = pitch_letter(p);
+    int accidental = pitch_accidental(p);
+    if (accidental > 4)
+        accidental = 4;
+    if (accidental < -4)
+        accidental = -4;
+
+    int octave = pitch_octave(p) - 5;
+    if (octave > 6)
+        octave = 6;
+    if (octave < 0) {
+        octave++;
+        letter += 'A';
+    } else
+        letter += 'a';
+    if (octave < -6)
+        octave = -6;
+
+    while (accidental) {
+        if (accidental > 0) {
+            pos += snprintf(out + pos, cap - pos, "^");
+            accidental--;
+        } else {
+            pos += snprintf(out + pos, cap - pos, "_");
+            accidental++;
+        }
+    }
+
+    pos += snprintf(out + pos, cap - pos, "%c", letter);
+
+    while (octave) {
+        if (octave > 0) {
+            pos += snprintf(out + pos, cap - pos, "'");
+            octave--;
+        } else {
+            pos += snprintf(out + pos, cap - pos, ",");
+            octave++;
+        }
+    }
 }
 #endif // MEANTONAL

@@ -2,7 +2,7 @@
 title: Pitch
 description: Reference page for functions that create, transform or query Pitch vectors.
 sidebar:
-  order: 3
+  order: 2
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -17,24 +17,7 @@ This page details all the functions that create, transform or query [`Pitch`](/c
 Pitch p = { 25, 10 }; // initialised to middle C
 ```
 
-It's often more convenient, however, to be able to create a new `Pitch` from existing vectors, or to assign them values by parsing strings in accepted formats.
-
-### `pitch_from_spn`
-
-```c
-int pitch_from_spn(const char *s, Pitch *out);
-```
-
-Parses a `Pitch` from [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation). Outputs the `Pitch` via an out-param (you must pass in a pointer to a `Pitch`). Returns 1 if there is a parsing error.
-
-Safe usage if the string is being passed in dynamically:
-
-```c
-Pitch p;
-if (int pitch_from_spn(str, &p)) {
-    // handle parsing error
-}
-```
+It's often more convenient, however, to be able to create a new `Pitch` from existing vectors, or to assign them values by [parsing strings in accepted formats](/c/parse).
 
 ### `pitch_from_chroma`
 
@@ -112,7 +95,7 @@ int pitch_pc12(Pitch p);
 
 Returns the 12-tone pitch class number of a `Pitch` (C is 0).
 
-### `steps_to`
+### `steps_between`
 
 ```c
 static inline int steps_between(Pitch p, Pitch q);
@@ -173,25 +156,6 @@ MirrorAxis axis_create(Pitch p, Pitch q);
 
 Creates a [`MirrorAxis`](/c/types/#mirroraxis) about which to invert a `Pitch` by adding two `Pitch` vectors together. To be used in conjunction with [`pitch_invert`](/c/pitch/#pitch_invert).
 
-### `axis_from_spn`
-
-```c
-int axis_from_spn(char *p_str, char *q_str, MirrorAxis *out);
-```
-
-Creates a [`MirrorAxis`](/c/types/#mirroraxis) about which to invert a `Pitch` by adding two `Pitch` vectors together. To be used in conjunction with [`pitch_invert`](/c/pitch/#pitch_invert).
-
-Unlike [`axis_create`](/c/pitch/#axis_create), `axis_from_spn` takes two pitch names as [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) *strings*, and returns the created `MirrorAxis` via a passed in pointer. Returns 1 if there is a parsing error.
-
-Safe usage if the strings are being passed in dynamically:
-
-```c
-MirrorAxis a;
-if (int axis_from_spn(str1, str2, &a)) {
-    // handle parsing error
-}
-
-```
 ### `pitch_invert`
 
 ```c
@@ -216,4 +180,4 @@ Converts from Meantonal's standard [`Pitch`](/c/types/#pitch) representation to 
 Pitch pitch_from_standard(StandardPitch p);
 ```
 
-Converts from the [`StandardPitch`](/c/types/#standardpitch) type back to a regular [`Pitch`](/c/types/#pitch) vector.
+Converts from the [`StandardPitch`](/c/types/#standardpitch) type back to a regular [`Pitch`](/c/types/#pitch) vector. Conversion in this direction is generally less used, but the `StandardPitch` might represent a convenient parsing target to then extract `Pitch` vectors from if you are working with a notation format [Meantonal's parse functions](/c/parse) don't cover.

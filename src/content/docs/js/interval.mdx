@@ -96,6 +96,25 @@ m = Interval.fromName("m3");
 m.chroma; // -3
 ```
 
+### `isDiatonic`
+
+```ts
+get isDiatonic(): boolean;
+```
+
+Affirms whether a given interval is capable of occurring diatonically (i.e. is found within the major scale).
+
+```ts
+let m = Interval.fromName("P5");
+m.isDiatonic; // true
+
+m = Interval.fromName("A4");
+m.isDiatonic; // true
+
+m = Interval.fromName("A6");
+m.isDiatonic; // false
+```
+
 ### `quality`
 
 ```ts

@@ -2,7 +2,7 @@
 title: Interval
 description: Reference page for functions that create, transform or query Interval vectors.
 sidebar:
-  order: 4
+  order: 3
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -17,7 +17,7 @@ This page details all the functions that create, transform or query [`Interval`]
 Interval m = { 3, 0 }; // initialised to an augmented 4th
 ```
 
-It's often more convenient, however, to be able to create new `Interval`s from old, or to assign them values by parsing strings in accepted formats.
+It's often more convenient, however, to be able to create new `Interval`s from old, or to assign them values by [parsing strings in accepted formats](/c/parse/#interval_from_spn).
 
 ### `interval_from_name`
 
@@ -50,23 +50,6 @@ if (int interval_from_name(str, &p)) {
 }
 ```
 
-### `interval_from_spn`
-
-```c
-int interval_from_spn(const char *p_str, const char *q_str, Interval *out);
-```
-
-Parses two strings into `Pitch` vectors from [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation) to generate an `Interval` vector from. Outputs via a passed in `Interval` pointer. Returns 1 if anything went wrong during parsing.
-
-Safe usage if the string is being passed in dynamically:
-
-```c
-Interval m;
-if (int interval_from_spn(str1, str2, &p)) {
-    // handle parsing error
-}
-```
-
 ### `interval_between`
 
 ```c
@@ -82,6 +65,34 @@ Creates an `Interval` from two `Pitch` vectors by subtracting the first from the
 ```c
 int interval_chroma(Interval m);
 ```
+
+Returns the number of perfect fifths (signed) separating an `Interval` from the unison. Abstracts octave information away.
+
+### `interval_diatonic`
+
+```c
+static inline bool interval_diatonic(Interval m);
+```
+
+Check whether a given interval is capable of occurring diatonically (i.e. is found within the major scale).
+
+### `interval_quality`
+
+```c
+int interval_quality(Interval m);
+```
+
+Returns an `Interval`'s quality as a signed integer:
+
+|            |     |
+| :--------: | :-: |
+| Augmented  |  2  |
+| Major      |  1  |
+| Perfect    |  0  |
+| Minor      | -1  |
+| Diminished | -2  |
+
+etc. for doubly-augmented/diminished intervals and beyond.
 
 Returns the number of perfect fifths (signed) separating an `Interval` from the unison. Abstracts octave information away.
 
@@ -103,23 +114,21 @@ int interval_pc12(Interval m);
 
 Returns the 12-tone pitch class interval number of an `Interval` vector.
 
-### `interval_quality`
+### `interval_name`
 
 ```c
-int interval_quality(Interval m);
+void interval_name(Interval m, char *out);
 ```
 
-Returns an `Interval`'s quality as a signed integer:
+Returns the stanard name of an interval as a string. You must pass a `char` array with at least 8 characters to store the result, which is returned via an out-param.
 
-|            |     |
-| :--------: | :-: |
-| Augmented  |  2  |
-| Major      |  1  |
-| Perfect    |  0  |
-| Minor      | -1  |
-| Diminished | -2  |
+```c
+Interval m;
+interval_from_name("P12");
 
-etc. for doubly-augmented/diminished intervals and beyond.
+char buf[8];
+interval_name(m, buf); // buf now holds the string "P12"
+```
 
 ### `intervals_equal`
 
@@ -171,7 +180,7 @@ Flips the direction of an `Interval`. Horizontally, an ascending major 3rd will 
 This is **not** the same as "inverting" an interval at the octave. That operation would be:
 
 ```c
-interval_between((Pitch){-5, -2}, m);
+intervals_subtract(m, (Interval){5, 2});
 ```
 
 </Aside>

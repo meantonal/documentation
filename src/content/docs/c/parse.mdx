@@ -1,0 +1,194 @@
+---
+title: Parse
+description: An overview of parsing functions provided by Meantonal to handle Scientific Pitch Notation, HelmHoltz notation, LilyPond and ABC.
+sidebar:
+  order: 7
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The functions listed here enable the parsing of `Pitch` vectors and derived types to and from strings.
+
+<Aside type="caution">
+
+These functions are quick and simple, but they are not especially robust. They can detect and signal some parsing errors, but do not rely on them to process user-enterred input in a serious application.
+
+</Aside>
+
+## Scientific Notation
+
+### `pitch_from_spn`
+
+```c
+int pitch_from_spn(const char *s, Pitch *out);
+```
+
+Parses a `Pitch` from [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation). Outputs the `Pitch` via an out-param (you must pass in a pointer to a `Pitch`). Returns 1 if there is a parsing error.
+
+Safe usage if the string is being passed in dynamically:
+
+```c
+Pitch p;
+if (int pitch_from_spn(str, &p)) {
+    // handle parsing error
+}
+```
+
+### `pitch_spn`
+
+```c
+void pitch_spn(Pitch p, char *out);
+```
+
+Returns the [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation) name of a Pitch as a string. You must pass a `char` array with at least 8 characters to store the result, which is returned via an out-param.
+
+```c
+Pitch p;
+pitch_from_spn("G#5", &p);
+
+char buf[8];
+pitch_spn(p, buf); // buf now holds the string "G#5"
+```
+
+### `interval_from_spn`
+
+```c
+int interval_from_spn(const char *p_str, const char *q_str, Interval *out);
+```
+
+Parses two strings into `Pitch` vectors from [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation) to generate an `Interval` vector from. Outputs via a passed in `Interval` pointer. Returns 1 if anything went wrong during parsing.
+
+Safe usage if the string is being passed in dynamically:
+
+```c
+Interval m;
+if (int interval_from_spn(str1, str2, &p)) {
+    // handle parsing error
+}
+```
+
+### `axis_from_spn`
+
+```c
+int axis_from_spn(char *p_str, char *q_str, MirrorAxis *out);
+```
+
+Creates a [`MirrorAxis`](/c/types/#mirroraxis) about which to invert a `Pitch` by adding two `Pitch` vectors together. To be used in conjunction with [`pitch_invert`](/c/pitch/#pitch_invert).
+
+Unlike [`axis_create`](/c/pitch/#axis_create), `axis_from_spn` takes two pitch names as [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) *strings*, and returns the created `MirrorAxis` via a passed in pointer. Returns 1 if there is a parsing error.
+
+Safe usage if the strings are being passed in dynamically:
+
+```c
+MirrorAxis a;
+if (int axis_from_spn(str1, str2, &a)) {
+    // handle parsing error
+}
+
+```
+
+## Helmholtz Notation
+
+### `pitch_from_helmholtz`
+
+```c
+int pitch_from_helmholtz(const char *s, Pitch *out);
+```
+
+Parses a `Pitch` from [Helmholtz pitch notation](https://en.wikipedia.org/wiki/Helmholtz_pitch_notation). Outputs the `Pitch` via an out-param (you must pass in a pointer to a `Pitch`). Returns 1 if there is a parsing error.
+
+Safe usage if the string is being passed in dynamically:
+
+```c
+Pitch p;
+if (int pitch_from_helmholtz(str, &p)) {
+    // handle parsing error
+}
+```
+
+### `pitch_helmholtz`
+
+```c
+void pitch_helmholtz(Pitch p, char *out);
+```
+
+Returns the [Helmholtz pitch notation](https://en.wikipedia.org/wiki/Helmholtz_pitch_notation) name of a Pitch as a string. You must pass a `char` array with at least 16 characters to store the result, which is returned via an out-param.
+
+```c
+Pitch p;
+pitch_from_helmholtz("g#'", &p);
+
+char buf[16];
+pitch_helmholtz(p, buf); // buf now holds the string "g#'"
+```
+
+## LilyPond Notation
+
+### `pitch_from_lily`
+
+```c
+int pitch_from_lily(const char *s, Pitch *out);
+```
+
+Parses a `Pitch` from [LilyPond notation](https://lilypond.org/) (absolute mode, no rhythmic values). Outputs the `Pitch` via an out-param (you must pass in a pointer to a `Pitch`). Returns 1 if there is a parsing error.
+
+Safe usage if the string is being passed in dynamically:
+
+```c
+Pitch p;
+if (int pitch_from_lily(str, &p)) {
+    // handle parsing error
+}
+```
+
+### `pitch_lily`
+
+```c
+void pitch_lily(Pitch p, char *out);
+```
+
+Returns the [LilyPond](https://lilypond.org/) name of a Pitch as a string. You must pass a `char` array with at least 16 characters to store the result, which is returned via an out-param.
+
+```c
+Pitch p;
+pitch_from_lily("gis'", &p);
+
+char buf[16];
+pitch_lily(p, buf); // buf now holds the string "gis'"
+```
+
+## ABC Notation
+
+### `pitch_from_abc`
+
+```c
+int pitch_from_abc(const char *s, Pitch *out);
+```
+
+Parses a `Pitch` from [ABC notation](https://abcnotation.com/). Outputs the `Pitch` via an out-param (you must pass in a pointer to a `Pitch`). Returns 1 if there is a parsing error.
+
+Safe usage if the string is being passed in dynamically:
+
+```c
+Pitch p;
+if (int pitch_from_abc(str, &p)) {
+    // handle parsing error
+}
+```
+
+### `pitch_abc`
+
+```c
+void pitch_abc(Pitch p, char *out);
+```
+
+Returns the [ABC](https://abcnotation.com/) name of a Pitch as a string. You must pass a `char` array with at least 16 characters to store the result, which is returned via an out-param.
+
+```c
+Pitch p;
+pitch_from_abc("^g'", &p);
+
+char buf[16];
+pitch_abc(p, buf); // buf now holds the string "^g'"
+```
+
