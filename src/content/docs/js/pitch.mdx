@@ -361,3 +361,39 @@ let p = SPN.toPitch("F#4");
 
 p = p.transposeDiatonic(4, context); // p now points to C5
 ```
+
+## Ranges
+
+### `range.diatonic`
+
+```ts
+diatonic(from: Pitch, to: Pitch, context: TonalContext): Generator<Pitch, void, unknown>;
+```
+
+Generates a diatonic range of `Pitch` vectors between the two boundary `Pitch`es passed-in, within the specified `TonalContext`
+
+```ts
+let context = TonalContext.fromStrings("C", "major");
+let p = SPN.toPitch("C4");
+let q = SPN.toPitch("E5");
+
+Pitch.range.diatonic(p, q, context).forEach(r => console.log(SPN.fromPitch(r)));
+// C4 D4 E4 F4 G4 A4 B4 C5 D5 E5
+```
+
+### `range.chromatic`
+
+```ts
+chromatic(from: Pitch, to: Pitch, context: TonalContext): Generator<Pitch, void, unknown>;
+```
+
+Generates a chromatic range of `Pitch` vectors between the two boundary `Pitch`es passed-in, within the specified `TonalContext`. Essentially any all pitches between the boundaries that could occur diatonically or chromatically in a given tonal context.
+
+```ts
+let context = TonalContext.fromStrings("C", "major");
+let p = SPN.toPitch("C4");
+let q = SPN.toPitch("E5");
+
+Pitch.range.chromatic(p, q, context).forEach(r => console.log(SPN.fromPitch(r)));
+// C4 Db4 C#4 D4 Eb4 D#4 E4 F4 Gb4 F#4 G4 Ab4 G#4 A4 Bb4 A#4 B4 C5 Db5 C#5 D5 Eb5 D#5 E5
+```
