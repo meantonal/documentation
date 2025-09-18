@@ -9,7 +9,7 @@ This page details the `Pitch` class and all its methods.
 
 ## Creating Pitches
 
-There are three main ways to create `Pitch` vectors from scratch. Using the [class constructor](#class-constructor), using the static method [`Pitch.fromChroma`](#pitchfromchroma), or using static methods on a [parse class](/js/parse) to parse a `Pitch` from a string format like SPN or LilyPond.
+There are three main ways to create `Pitch` vectors from scratch. Using the [class constructor](#class-constructor), using the static method [`Pitch.fromChroma`](#fromchroma), or using static methods on a [parse class](/js/parse) to parse a `Pitch` from a string format like SPN or LilyPond.
 
 ### Class Constructor
 
@@ -318,13 +318,13 @@ p.isEqual(q); // true
 ### `invert`
 
 ```ts
-invert(axis: Axis): Pitch;
+invert(axis: MirrorAxis): Pitch;
 ```
 
-Invert a `Pitch` about the passed in [`Axis`](/js/axis). An `Axis` is created from two `Pitches` that will be mapped to each other by the inversion across it. Returns the inverted Pitch as a new vector.
+Invert a `Pitch` about the passed in [`MirrorAxis`](/js/axis). A `MirrorAxis` is created from two `Pitches` that will be mapped to each other by the inversion across it, or via the [Axis.fromSPN](/js/axis/#fromspn) method using SPN strings. Returns the inverted `Pitch` as a new vector.
 
 ```ts
-let axis = Axis.fromSPN("C4", "G4");
+let axis = MirrorAxis.fromSPN("C4", "G4");
 let p = SPN.toPitch("Db4");
 
 p = p.invert(axis); // p now points to F#4

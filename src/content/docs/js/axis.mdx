@@ -1,11 +1,11 @@
 ---
-title: Axis
-description: An overview of the Axis class, used in Pitch inversion.
+title: MirrorAxis
+description: An overview of the MirrorAxis class, used in Pitch inversion.
 sidebar:
   order: 5
 ---
 
-The `Axis` class is used to invert [`Pitch`](/js/pitch) vectors about a fixed point via [`Pitch.invert`](/js/pitch/#invert).
+The `MirrorAxis` class is used to invert [`Pitch`](/js/pitch) vectors about a fixed point via [`Pitch.invert`](/js/pitch/#invert).
 
 ### Class Constructor
 
@@ -13,10 +13,10 @@ The `Axis` class is used to invert [`Pitch`](/js/pitch) vectors about a fixed po
 constructor(p: Pitch, q: Pitch);
 ```
 
-An `Axis` is constructed from two `Pitch` vectors, which would be sent to each other via inversion about the resultant axis.
+A `MirrorAxis` is constructed from two `Pitch` vectors, which would be sent to each other via inversion about the resultant axis.
 
 ```ts
-let axis = new Axis(
+let axis = new MirrorAxis(
     SPN.toPitch("C4");
     SPN.toPitch("G4");
 );
@@ -24,3 +24,11 @@ let axis = new Axis(
 let p = SPN.toPitch("E4");
 p.invert(axis); // "Eb4"
 ```
+
+### `fromSPN`
+
+```ts
+static fromSPN(ps: string, qs: string): MirrorAxis;
+```
+
+Creates a `MirrorAxis` using [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) strings for two `Pitch` vectors which would be sent to each other via inversion about the resultant axis.
