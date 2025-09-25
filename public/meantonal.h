@@ -332,16 +332,17 @@ static inline int interval_pc12(Interval m) { return (2 * m.w + m.h) % 12; }
  * etc. for silly intervals.
  */
 static inline int interval_quality(Interval m) {
+    int sign = stepspan(m) < 0 ? -1 : 1;
     int chroma = interval_chroma(m);
     if (chroma == 0)
-        return 0;
+        return sign * 0;
     if (chroma > 0 && chroma <= 5)
-        return (chroma + 5) / 7;
+        return sign * (chroma + 5) / 7;
     if (chroma < 0 && chroma >= -5)
-        return (chroma - 5) / 7;
+        return sign * (chroma - 5) / 7;
     if (chroma > 5)
-        return (chroma + 8) / 7;
-    return (chroma - 8) / 7;
+        return sign * (chroma + 8) / 7;
+    return sign * (chroma - 8) / 7;
 }
 
 /**
@@ -782,13 +783,16 @@ void interval_name(Interval m, char *out) {
 
     static const char qualities[5] = {'d', 'm', 'P', 'M', 'A'};
     int8_t quality = interval_quality(m);
-    int8_t generic_size = stepspan(m) + 1;
+    int ss = stepspan(m);
+    int8_t generic_size = abs(ss) + 1;
+    char *sign = ss < 0 ? "-" : "";
     if (quality <= 2 && quality >= -2) {
-        snprintf(out, cap, "%c%hhd", qualities[quality + 2], generic_size);
+        snprintf(out, cap, "%s%c%hhd", sign, qualities[quality + 2],
+                 generic_size);
     } else if (quality > 0) {
-        snprintf(out, cap, "%dA%hhd", quality - 1, generic_size);
+        snprintf(out, cap, "%s%dA%hhd", sign, quality - 1, generic_size);
     } else {
-        snprintf(out, cap, "%hhdd%hhd", -quality - 1, generic_size);
+        snprintf(out, cap, "%s%hhdd%hhd", sign, -quality - 1, generic_size);
     }
 }
 
