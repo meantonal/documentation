@@ -29,6 +29,7 @@ hero:
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 import { Tabs, TabItem } from '@astrojs/starlight/components';
+import Cantussy from "../../assets/cantussy.svg";
 
 <Card title="Install" icon="rocket">
   <Tabs>
@@ -59,3 +60,15 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 		Target any meantone tuning system, not just 12-tone equal temperament. You want 31 tones per octave? Done.
 	</Card>
 </CardGrid>
+
+<div class="mt-12">
+    Meantonal is a young library, but here are some projects already using it:
+    <div class="flex justify-center">
+        <div class="w-48">
+            <a href="https://cantussy.com">
+                <Cantussy class="fill-current text-stone-900 dark:text-orange-100" />
+            </a>
+        </div>
+    </div>
+    Do you use Meantonal? [Let us know!](mailto:hexmusictheory@protonmail.com)
+</div>
