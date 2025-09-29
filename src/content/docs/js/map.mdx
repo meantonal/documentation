@@ -173,6 +173,7 @@ constructor(
     fifth: number,
     referencePitch?: string,
     referenceFreq?: number
+    midiMap?: Map1D;
 );
 ```
 
@@ -241,11 +242,29 @@ T.toCents(m); // 400
 toRatio(m: Interval): number;
 ```
 
-returns the ratio of the passed `Interval` as a decimal number.
+Returns the ratio of the passed `Interval` as a decimal number.
 
 ```ts
 const T = TuningMap.fromEDO(31);
 
 let m = Interval.fromName("A6");
 T.toRatio(m); // 1.7489046221194973
+```
+
+### `toMIDI`
+
+```ts
+toMIDI(p: Pitch): number;
+```
+
+Returns an ordered pitch numbering for the passed `Pitch` as an integer. Available in any EDO `TuningMap` created via `TuningMap.fromEDO`. For 12TET, this will be the ordinary MIDI value for a given `Pitch`, but for other EDO tunings it provides an ordered MIDI-equvalent mapping.
+
+```ts
+const T1 = TuningMap.fromEDO(12);
+const T2 = TuningMap.fromEDO(31);
+
+let p = SPN.toPitch("C4");
+
+T1.toMIDI(p); // 60
+T2.toMIDI(p); // 155
 ```

@@ -172,6 +172,22 @@ let p = SPN.toPitch("F4");
 p.octave; // 4
 ```
 
+### `intervalTo`
+
+```ts
+intervalTo(p: Pitch): Interval;
+```
+
+Returns the [`Interval`](/js/interval) from the current Pitch to another passed-in vector. Often a more convenient way to access [`Interval.between`](/js/interval/#intervalbetween)
+
+```ts
+let p = SPN.toPitch("C4");
+let q = SPN.toPitch("E4");
+
+let m = p.intervalTo(q); // m now holds a major third Interval
+let n = Interval.between(p, q); // equivalent
+```
+
 ### `stepsTo`
 
 ```ts
@@ -278,25 +294,52 @@ p = SPN.toPitch("Bbb4")
 p.alterationIn(context); // -2, Bbb is too flat for this context
 ```
 
+### `highest`
+
+```ts
+highest(arr: Pitch[], T?: TuningMap): Pitch;
+```
+
+Returns the highest `Pitch` in a passed-in array. Uses an optional `TuningMap` to determine which `Pitch` is higher than the others; if no `TuningMap` is passed in, defaults to 12TET.
+
+```ts
+const pitchArray = ["C4", "F#4", "D4", "Bb4", "A#4", "G4"].map(p => SPN.toPitch(p));
+
+const highest = Pitch.highest(pitchArray); // highest holds Bb4
+```
+
+### `lowest`
+
+```ts
+lowest(arr: Pitch[], T?: TuningMap): Pitch;
+```
+
+Returns the lowest `Pitch` in a passed-in array. Uses an optional `TuningMap` to determine which `Pitch` is lower than the others; if no `TuningMap` is passed in, defaults to 12TET.
+
+```ts
+const pitchArray = ["C4", "F#4", "D4", "Bb4", "A#4", "G4"].map(p => SPN.toPitch(p));
+
+const lowest = Pitch.lowest(pitchArray); // lowest holds C4
+```
+
+### `nearest`
+
+```ts
+nearest(arr: Pitch[], T?: TuningMap): Pitch;
+```
+
+Returns the nearest `Pitch` in a passed-in array to the calling `Pitch` instance. Uses an optional `TuningMap` to determine which `Pitch` is lower than the others; if no `TuningMap` is passed in, defaults to 12TET.
+
+```ts
+const pitchArray = ["C4", "F#4", "D4", "Bb4", "A#4", "G4"].map(p => SPN.toPitch(p));
+let p = SPN.toPitch("Eb4");
+
+const nearest = p.nearest(pitchArray); // nearest holds D4
+```
+
 ## Transformations
 
-The following methods produce a new vector from the current `Pitch`. None of them mutate the original object.
-
-### `intervalTo`
-
-```ts
-intervalTo(p: Pitch): Interval;
-```
-
-Returns the [`Interval`](/js/interval) from the current Pitch to another passed-in vector. Often a more convenient way to access [`Interval.between`](/js/interval/#intervalbetween)
-
-```ts
-let p = SPN.toPitch("C4");
-let q = SPN.toPitch("E4");
-
-let m = p.intervalTo(q); // m now holds a major third Interval
-let n = Interval.between(p, q); // equivalent
-```
+The following methods produce a new `Pitch` from the current `Pitch`. None of them mutate the original object.
 
 ### `transposeReal`
 
