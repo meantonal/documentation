@@ -16,7 +16,7 @@ int map_to_1d(MapVec v, Map1d T);
 This function allows an arbitrary `Map1d` matrix to multiply a `MapVec`, sending it to some integer. Allows things like:
 
 ```c
-map_to_1d((MapVec)p, ED31);
+(int)map_to_1d((MapVec){p.w, p.h}, ED31);
 ```
 
 This would send any `Pitch` to a 31-tone equal temperament equivalent of MIDI numbering, such that:
@@ -51,12 +51,12 @@ $$
 = [c_0, c_1]
 $$
 
-Returns a new `Map1D`. Creating new maps from the composition of existing maps can save on unnecessary computation.
+Returns a new `Map1D`. Creating new maps from the composition of existing maps can save on unnecessary computation. Just be aware that floating point arithmetic is cursed, and $(AB)x$ does not necessarily equal $A(Bx)$.
 
 ### `map_to_2d`
 
 ```c
-MappedVec map_to_2d(MapVec v, Map2d T);
+MapVec map_to_2d(MapVec v, Map2d T);
 ```
 
 This function allows an arbitrary `Map2d` matrix to multiply a `MapVec`. If it's an invertible matrix, this essentially facilitates a [change of basis](https://en.wikipedia.org/wiki/Change_of_basis). The returned vector is another `MapVec`.
@@ -69,7 +69,8 @@ typedef struct {
 } WickiKey;
 
 Pitch pitch_from_key(WickiKey k) {
-    return (Pitch) map_to_2d((MapVec) k, WICKI_FROM);
+    MapVec v = map_to_2d((MapVec) k, WICKI_FROM);
+    return (Pitch){v.x, v.y};
 }
 ```
 
@@ -88,7 +89,7 @@ $$
 \begin{bmatrix} c_{00} & c_{01} \\ c_{10} & c_{11} \end{bmatrix}
 $$
 
-Returns a new `Map2D`. Creating new maps from the composition of existing maps can save on unnecessary computation.
+Returns a new `Map2D`. Creating new maps from the composition of existing maps can save on unnecessary computation. Just be aware that floating point arithmetic is cursed, and $(AB)x$ does not necessarily equal $A(Bx)$.
 
 ### `tuning_map_from_fifth`
 
@@ -153,3 +154,11 @@ TuningMap T = tuning_map_from_edo(31, "C4", CONCERT_C4);
 
 to_cents(m, T); // 696.7741935483871
 ```
+
+### `to_pitch_number`
+
+```c
+int to_pitch_number(Pitch p, TuningMap T);
+```
+
+Returns an ordered pitch numbering for the passed `Pitch` as an integer. Available in any EDO `TuningMap` created via `TuningMap.fromEDO`. For 12TET, this will be the ordinary MIDI value for a given `Pitch`, but for other EDO tunings it provides an ordered MIDI-equvalent mapping.

@@ -328,7 +328,7 @@ const lowest = Pitch.lowest(pitchArray); // lowest holds C4
 nearest(arr: Pitch[], T?: TuningMap): Pitch;
 ```
 
-Returns the nearest `Pitch` in a passed-in array to the calling `Pitch` instance. Uses an optional `TuningMap` to determine which `Pitch` is lower than the others; if no `TuningMap` is passed in, defaults to 12TET.
+Returns the nearest `Pitch` in a passed-in array to the calling `Pitch` instance. Uses an optional `TuningMap` to determine which `Pitch` is nearer than the others; if no `TuningMap` is passed in, defaults to 12TET.
 
 ```ts
 const pitchArray = ["C4", "F#4", "D4", "Bb4", "A#4", "G4"].map(p => SPN.toPitch(p));

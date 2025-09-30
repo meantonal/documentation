@@ -138,6 +138,74 @@ pitches_enharmonic(p, q, 31); // true; Gbb and Ex are enharmonic in 31tet
 pitches_enharmonic(p, q, 12); // false; Gbb and Ex are not enharmonic in 12tet
 ```
 
+### `pitch_highest`
+
+```c
+Pitch pitch_highest(Pitch arr[], int len, TuningMap T);
+```
+
+This function takes a `Pitch[]` array and a `TuningMap`, and returns the highest `Pitch` in the array. Uses the passed-in `TuningMap` to decide which `Pitch` is "higher" than the others.
+
+```c
+char *names[10] = {"B#3", "C4", "D4",  "D#4", "Eb4",
+                   "E4",  "F4", "Ex4", "F#4", "Gb4"};
+Pitch arr[10];
+for (int i = 0; i < 10; i++) {
+    pitch_from_spn(names[i], arr + i);
+}
+
+TuningMap T = tuning_map_from_edo(12, (Pitch){29, 11}, 440);
+
+Pitch highest = pitch_highest(arr, 10, T); // highest now holds Gb4
+```
+
+### `pitch_lowest`
+
+```c
+Pitch pitch_lowest(Pitch arr[], int len, TuningMap T);
+```
+
+This function takes a `Pitch[]` array and a `TuningMap`, and returns the lowest `Pitch` in the array. Uses the passed-in `TuningMap` to decide which `Pitch` is "lower" than the others.
+
+```c
+char *names[10] = {"B#3", "C4", "D4",  "D#4", "Eb4",
+                   "E4",  "F4", "Ex4", "F#4", "Gb4"};
+Pitch arr[10];
+for (int i = 0; i < 10; i++) {
+    pitch_from_spn(names[i], arr + i);
+}
+
+TuningMap T = tuning_map_from_edo(12, (Pitch){29, 11}, 440);
+
+Pitch lowest = pitch_lowest(arr, 10, T); // lowest now holds B#3
+```
+
+### `pitch_nearest`
+
+```c
+Pitch pitch_nearest(Pitch p, Pitch arr[], int len, TuningMap T);
+```
+
+This function takes a `Pitch`, a `Pitch[]` array and a `TuningMap`, and returns the closest `Pitch` in the array to the `Pitch` passed via the first argument. Uses the passed-in `TuningMap` to decide which `Pitch` is "closer" than the others.
+
+```c
+char *names[10] = {"B#3", "C4", "D4",  "D#4", "Eb4",
+                   "E4",  "F4", "Ex4", "F#4", "Gb4"};
+Pitch arr[10];
+for (int i = 0; i < 10; i++) {
+    pitch_from_spn(names[i], arr + i);
+}
+
+Pitch target;
+pitch_from_spn("Gbb4", &target);
+
+TuningMap T = tuning_map_from_edo(12, (Pitch){29, 11}, 440);
+Pitch nearest = pitch_nearest(target, arr, 10, T); // nearest now holds F4
+
+T = tuning_map_from_edo(31, reference, 440);
+nearest = pitch_nearest(target, arr, 10, T); // nearest now holds Ex4
+```
+
 ## Transformations
 
 ### `transpose_real`
