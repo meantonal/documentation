@@ -201,6 +201,14 @@ Interval intervals_subtract(Interval m, Interval n);
 
 Subtracts the second `Interval` vector from the first to produce a new `Interval`.
 
+### `interval_times`
+
+```c
+static inline Interval interval_times(Interval m, int x);
+```
+
+Multiplies an `Interval` vector by an integer scalar.
+
 ### `interval_simple`
 
 ```c

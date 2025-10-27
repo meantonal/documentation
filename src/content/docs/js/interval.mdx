@@ -302,6 +302,20 @@ let n = Interval.fromName("m3");
 m.subtract(n); // M3
 ```
 
+### `times`
+
+```ts
+times(x: number): Interval;
+```
+
+Multiplies an `Interval` vector by a scalar.
+
+```ts
+let m = Interval.fromName("P5");
+
+m.times(2); // M9
+```
+
 ## Ranges
 
 ### `range.diatonic`

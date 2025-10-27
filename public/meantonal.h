@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 // -----------------------------------------
 // HEADER DECLARATIONS ---------------------
@@ -135,15 +135,11 @@ typedef struct {
     int octave;
 } StandardPitch;
 
-
-
 extern const Map1D EDO7, EDO12, EDO17, EDO19, EDO22, EDO31, EDO50, EDO53, EDO55,
     EDO81;
 extern const Map2D WICKI_TO, WICKI_FROM, GENERATORS_TO, GENERATORS_FROM;
 
 extern const double CONCERT_C4;
-
-
 
 /**
  * Creates a Pitch vector from a specified chroma (signed distance from C in
@@ -270,8 +266,6 @@ static inline StandardPitch pitch_to_standard(Pitch p) {
                            .octave = pitch_octave(p)};
 }
 
-
-
 /**
  * Parses an interval name like "P5" to generate an Interval.
  * @param out
@@ -395,6 +389,13 @@ static inline Interval intervals_subtract(Interval m, Interval n) {
 }
 
 /**
+ * Multiplies an Interval vector by a scalar integer.
+ */
+static inline Interval interval_times(Interval m, int x) {
+    return (Interval){.w = m.w * x, .h = m.h * x};
+}
+
+/**
  * Reduces an interval until it is smaller than an octave
  */
 static inline Interval interval_simple(Interval m) {
@@ -408,8 +409,6 @@ static inline Interval interval_simple(Interval m) {
     }
     return m;
 }
-
-
 
 /**
  * Creates a TonalContext from a string naming the pitch class (e.g. "Ab"), and
@@ -467,8 +466,6 @@ Pitch snap_diatonic(Pitch p, TonalContext key);
  */
 Pitch transpose_diatonic(Pitch p, int interval, TonalContext key);
 
-
-
 /**
  * Frees the memory previously allocated by a passed in PitchClassSet.
  */
@@ -514,8 +511,6 @@ PitchClassSet pc_set_intersection(PitchClassSet a, PitchClassSet b);
  * second.
  */
 PitchClassSet pc_set_difference(PitchClassSet a, PitchClassSet b);
-
-
 
 /**
  * Maps to an integer using a 1x2 matrix.
@@ -595,7 +590,6 @@ double to_cents(Interval m, TuningMap T);
  * it provides an ordered MIDI-equvalent mapping.
  */
 int to_pitch_number(Pitch p, TuningMap T);
-
 
 /**
  * Converts from (letter, accidental, octave) format to (whole, half)
@@ -700,9 +694,9 @@ static inline int axis_from_spn(char *p_str, char *q_str, MirrorAxis *out) {
 
 #ifdef MEANTONAL
 #undef MEANTONAL
-#include <stdio.h>
-#include <stdint.h>
 #include <math.h>
+#include <stdint.h>
+#include <stdio.h>
 
 const Map1D EDO7 = {1, 1};
 const Map1D EDO12 = {2, 1};
@@ -984,7 +978,6 @@ Pitch snap_diatonic(Pitch p, TonalContext key) {
 Pitch transpose_diatonic(Pitch p, int interval, TonalContext key) {
     return snap_diatonic(transpose_real(p, (Interval){interval, 0}), key);
 }
-
 
 typedef struct tnode {
     int value;
@@ -1522,4 +1515,3 @@ void pitch_abc(Pitch p, char *out) {
     }
 }
 #endif // MEANTONAL
-
