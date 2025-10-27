@@ -9,23 +9,6 @@ Meantonal provides an assortment of constant `Map1D` and `Map2D` matrices to use
 
 They are of particular utility, however, for people playing with tuning systems other than 12-tone equal temperament, or building graphical visualisations of generalised keyboard layouts.
 
-## EDO Maps
-
-These maps send any `Pitch` or `Interval` to its representation as EDO-steps in a given equal temperament. Intuitively, you can think of them as defining the respect size of whole and half steps after the map. In 12TET, a whole step is two half steps, therefore $[2, 1]$ is the matrix that projects the Meantonal space onto 12TET.
-
-```c
-const Map1D EDO7 = {1, 1};
-const Map1D EDO12 = {2, 1};
-const Map1D EDO17 = {3, 1};
-const Map1D EDO19 = {3, 2};
-const Map1D EDO22 = {4, 1};
-const Map1D EDO31 = {5, 3};
-const Map1D EDO50 = {5, 3};
-const Map1D EDO53 = {9, 4};
-const Map1D EDO55 = {5, 4};
-const Map1D EDO81 = {13, 8};
-```
-
 ## Basis Changes
 
 These maps send any `Pitch` to its coordinates in the new basis, or vice versa.

@@ -177,7 +177,7 @@ constructor(
 );
 ```
 
-Creates a `TuningMap` instance.
+Creates a `TuningMap` instance manually.
 
 ### `fromEDO`
 
@@ -251,20 +251,57 @@ let m = Interval.fromName("A6");
 T.toRatio(m); // 1.7489046221194973
 ```
 
-### `toMIDI`
+## `EDOMap`
+
+This handy class creates a map to a well-ordered integer numbering for a given EDO tuning. For 12TET this is equivalent to standard MIDI, and for other EDO tunings a similar numbering is generated.
+
+### Class Constructor
 
 ```ts
-toMIDI(p: Pitch): number;
+constructor(edo: number);
 ```
 
-Returns an ordered pitch numbering for the passed `Pitch` as an integer. Available in any EDO `TuningMap` created via `TuningMap.fromEDO`. For 12TET, this will be the ordinary MIDI value for a given `Pitch`, but for other EDO tunings it provides an ordered MIDI-equvalent mapping.
+Create an `EDOMap` instance by simply specifying the number of parts the octave will be divided into.
+
+### `toNumber`
 
 ```ts
-const T1 = TuningMap.fromEDO(12);
-const T2 = TuningMap.fromEDO(31);
+toNumber(p: Pitch): number;
+```
+
+Returns an ordered pitch numbering for the passed `Pitch` as an integer. For 12TET, this will be the ordinary MIDI value for a given `Pitch`, but for other EDO tunings it provides an ordered MIDI-equvalent mapping.
+
+```ts
+const T1 = new EDOMap(12);
+const T2 = new EDOMap(31);
 
 let p = SPN.toPitch("C4");
 
-T1.toMIDI(p); // 60
-T2.toMIDI(p); // 155
+T1.toNumber(p); // 60
+T2.toNumber(p); // 155
+```
+
+### `compare`
+
+```ts
+compare(p: Pitch, q: Pitch): number;
+```
+
+In the specified EDO:
+- Returns a positive number if p is above q.
+- Returns a negative value if p is below q.
+- Returns 0 if p and q are enharmonic.
+
+```ts
+let p = SPN.toPitch("C#4");
+let q = SPN.toPitch("Db4");
+
+let T = new EDOMap(53);
+T.compare(p, q); // 1
+
+T = new EDOMap(31);
+T.compare(p, q); // -1
+
+T = new EDOMap(12);
+T.compare(p, q); // 0
 ```
