@@ -138,6 +138,42 @@ pitches_enharmonic(p, q, 31); // true; Gbb and Ex are enharmonic in 31tet
 pitches_enharmonic(p, q, 12); // false; Gbb and Ex are not enharmonic in 12tet
 ```
 
+### `pitch_to_number`
+
+```c
+int pitch_to_number(Pitch p, EDOMap T);
+```
+
+Uses an [`EDOMap`](/c/types/#edomap) produced by [`create_edo_map`](/c/map/#creape_edo_map). Returns an ordered pitch numbering for the passed `Pitch` as an integer. For 12TET, this will be the ordinary MIDI value for a given `Pitch`, but for other EDO tunings it provides an ordered MIDI-equvalent mapping.
+
+### `pitches_compare`
+
+```c
+int pitches_compare(Pitch p, Pitch q, EDOMap T);
+```
+
+Uses an [`EDOMap`](/c/types/#edomap) produced by [`create_edo_map`](/c/map/#creape_edo_map). In the specified EDO:
+- Returns a positive number if p is above q.
+- Returns a negative value if p is below q.
+- Returns 0 if p and q are enharmonic.
+
+```c
+Pitch p;
+pitch_from_spn("C#4", &p);
+Pitch q;
+pitch_from_spn("Db4", &q);
+
+EDOMap T = create_edo_map(53);
+pitches_compare(p, q, T); // 1
+
+T = create_edo_map(31);
+pitches_compare(p, q, T); // -1
+
+T = create_edo_map(12);
+pitches_compare(p, q, T); // 0
+
+```
+
 ### `pitch_highest`
 
 ```c

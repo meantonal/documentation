@@ -7,6 +7,8 @@ sidebar:
 
 This page details functions that apply linear maps to generic 2d vectors. Many of Meantonal's built-in functions that operate on `Pitch` and `Interval` vectors are essentially performing these maps under the hood, but these generalised mapping operations are available in case something you need isn't a built-in.
 
+## Generic Maps
+
 ### `map_to_1d`
 
 ```c
@@ -91,6 +93,8 @@ $$
 
 Returns a new `Map2D`. Creating new maps from the composition of existing maps can save on unnecessary computation. Just be aware that floating point arithmetic is cursed, and $(AB)x$ does not necessarily equal $A(Bx)$.
 
+## Tuning Maps
+
 ### `tuning_map_from_fifth`
 
 ```c
@@ -154,46 +158,13 @@ TuningMap T = tuning_map_from_edo(31, "C4", CONCERT_C4);
 
 to_cents(m, T); // 696.7741935483871
 ```
-### `step_map_from_edo`
+
+### `create_edo_map`
 
 ```c
-Map1D step_map_from_edo(int edo);
+EDOMap create_edo_map(int edo);
 ```
 
-Create a map to a well-ordered integer numbering for a given EDO tuning. For 12TET this is equivalent to standard MIDI, and for other EDO tunings a similar numbering is generated.
+Create an [`EDOMap`](/c/types/#edomap) that maps `Pitch` vectors to a well-ordered integer numbering for a given EDO tuning. For 12TET this is equivalent to standard MIDI, and for other EDO tunings a similar numbering is generated.
 
-### `to_pitch_number`
-
-```c
-int to_pitch_number(Pitch p, Map1D T);
-```
-
-Uses a map to edosteps like those produced by [`step_map_from_edo`](#step_map_from_edo) Returns an ordered pitch numbering for the passed `Pitch` as an integer. For 12TET, this will be the ordinary MIDI value for a given `Pitch`, but for other EDO tunings it provides an ordered MIDI-equvalent mapping.
-
-### `pitches_compare`
-
-```ts
-int pitches_compare(Pitch p, Pitch q, Map1D T);
-```
-
-In the specified EDO:
-- Returns a positive number if p is above q.
-- Returns a negative value if p is below q.
-- Returns 0 if p and q are enharmonic.
-
-```c
-Pitch p;
-pitch_from_spn("C#4", &p);
-Pitch q;
-pitch_from_spn("Db4", &q);
-
-Map1D T = step_map_from_edo(53);
-pitches_compare(p, q, T); // 1
-
-T = step_map_from_edo(31);
-pitches_compare(p, q, T); // -1
-
-T = step_map_from_edo(12);
-pitches_compare(p, q, T); // 0
-
-```
+Used with [`pitch_to_number`](/c/pitch/#pitch_to_number) and [`pitches_compare`](/c/pitch/#pitches_compare).

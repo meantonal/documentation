@@ -184,6 +184,18 @@ typedef struct {
 } TuningMap;
 ```
 
+### `EDOMap`
+
+The `EDOMap` type represents a $1\times2$ matrix specifically used to map `Pitch` vectors onto well-ordered integer representations witnin a given EDO tuning system. For 12TET, this mapping is exactly equivalent to the standard MIDI representation, and for other EDO tunings it provides an analogous well-ordered numbering.
+
+```c
+typedef struct {
+    int m0, m1;
+} EDOMap;
+```
+
+Created by [`create_edo_map`](/c/map/#create_edo_map). Used with [`pitch_to_number`](/c/pitch/#pitch_to_number) and [`pitches_compare`](/c/pitch/#pitches_compare).
+
 ### `MirrorAxis`
 
 The `MirrorAxis` type is to do with a different kind of mapping operation: pitch inversion about a fixed axis. Like `Interval` and `MapVec`, it is an alias of the `Pitch` struct type.
