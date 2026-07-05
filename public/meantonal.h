@@ -1,5 +1,5 @@
-#include <stdbool.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 // -----------------------------------------
 // HEADER DECLARATIONS ---------------------
@@ -143,9 +143,13 @@ typedef struct {
     int octave;
 } StandardPitch;
 
+
+
 extern const Map2D WICKI_TO, WICKI_FROM, GENERATORS_TO, GENERATORS_FROM;
 
 extern const double CONCERT_C4;
+
+
 
 /**
  * Creates a Pitch vector from a specified chroma (signed distance from C in
@@ -241,6 +245,12 @@ static inline int pitches_compare(Pitch p, Pitch q, EDOMap T) {
 }
 
 /**
+ * Returns true if p is within the approximate average range of human hearing.
+ * That is, roughly: between 20Hz - 20kHz
+ */
+bool pitch_audible(Pitch p, TuningMap T);
+
+/**
  * Returns the highest Pitch in a passed-in array. Uses a TuningMap to determine
  * which Pitch is higher than the others.
  */
@@ -290,6 +300,8 @@ static inline StandardPitch pitch_to_standard(Pitch p) {
                            .accidental = pitch_accidental(p),
                            .octave = pitch_octave(p)};
 }
+
+
 
 /**
  * Parses an interval name like "P5" to generate an Interval.
@@ -435,6 +447,8 @@ static inline Interval interval_simple(Interval m) {
     return m;
 }
 
+
+
 /**
  * Creates a TonalContext from a string naming the pitch class (e.g. "Ab"), and
  * a Mode (e.g. DORIAN).
@@ -491,6 +505,8 @@ Pitch snap_diatonic(Pitch p, TonalContext key);
  */
 Pitch transpose_diatonic(Pitch p, int interval, TonalContext key);
 
+
+
 /**
  * Frees the memory previously allocated by a passed in PitchClassSet.
  */
@@ -537,6 +553,8 @@ PitchClassSet pc_set_intersection(PitchClassSet a, PitchClassSet b);
  */
 PitchClassSet pc_set_difference(PitchClassSet a, PitchClassSet b);
 
+
+
 /**
  * Maps to an integer using a 1x2 matrix.
  * Most built-in functions that take Pitches and return integers perform
@@ -580,15 +598,27 @@ static inline Map2D map_compose_2d_2d(Map2D A, Map2D B) {
  * Creates a TuningMap from the width of the perfect fifth in cents in the
  * target tuning system.
  * Also required a reference Pitch and frequency for that Pitch.
+ * @param out
+ * Pointer to a TuningMap to store the result.
+ * @return
+ * 0 means nothing went wrong. Returns 1 if fifth falls outside ~685.7¢ to
+ * 720¢, which cannot produce a well-defined diatonic scale.
  */
-TuningMap tuning_map_from_fifth(double fifth, Pitch ref_pitch, double ref_freq);
+int tuning_map_from_fifth(double fifth, Pitch ref_pitch, double ref_freq,
+                          TuningMap *out);
 
 /**
  * Creates a TuningMap for an EDO tuning system from the number of parts the
  * octave is to be divided into.
  * Also required a reference Pitch and frequency for that Pitch.
+ * @param out
+ * Pointer to a TuningMap to store the result.
+ * @return
+ * 0 means nothing went wrong. Returns 1 if edo's fifth falls outside
+ * ~685.7¢ to 720¢, which cannot produce a well-defined diatonic scale.
  */
-TuningMap tuning_map_from_edo(int edo, Pitch ref_pitch, double ref_freq);
+int tuning_map_from_edo(int edo, Pitch ref_pitch, double ref_freq,
+                       TuningMap *out);
 
 /**
  * Returns the frequency of a Pitch when rendered in the tuning system defined
@@ -611,8 +641,14 @@ double to_cents(Interval m, TuningMap T);
 /**
  * Creates a Map1D that can be used to produce a well-ordered integer numbering
  * for pitches in an EDO tuning, and to compare pitches in edosteps.
+ * @param out
+ * Pointer to an EDOMap to store the result.
+ * @return
+ * 0 means nothing went wrong. Returns 1 if edo's fifth falls outside
+ * ~685.7¢ to 720¢, which cannot produce a well-defined diatonic scale.
  */
-EDOMap create_edo_map(int edo);
+int create_edo_map(int edo, EDOMap *out);
+
 
 /**
  * Converts from (letter, accidental, octave) format to (whole, half)
@@ -659,35 +695,49 @@ int pitch_from_abc(const char *s, Pitch *out);
  * Returns the SPN name of a Pitch as a string.
  * You must pass a char buf[8] to store the result, which is returned via an
  * out-param.
+ * @return
+ * true if the Pitch is more than a quadruple sharp/flat away from a natural,
+ * which usually indicates a logic error upstream, or if the name would not
+ * fit in 8 characters at all, in which case "ERR" is written to out instead.
+ * false otherwise.
  */
-void pitch_spn(Pitch p, char *out);
+bool pitch_spn(Pitch p, char *out);
 
 /**
  * Returns the LilyPond note name of a Pitch as a string.
  * You must pass a char buf[16] to store the result, which is returned via an
  * out-param.
- * Will truncate anything requiring accidentals more remote than quadruple
- * sharps/flats, or requiring more than 6 's or ,s to print.
+ * @return
+ * true if the Pitch's accidental goes beyond a double sharp/flat (LilyPond
+ * has no symbol for anything more remote), or if the name would not fit in
+ * 16 characters at all. In either case "ERR" is written to out instead.
+ * False otherwise.
  */
-void pitch_lily(Pitch p, char *out);
+bool pitch_lily(Pitch p, char *out);
 
 /**
  * Returns the Helmholtz note name of a Pitch as a string.
  * You must pass a char buf[16] to store the result, which is returned via an
  * out-param.
- * Will truncate anything requiring accidentals more remote than quadruple
- * sharps/flats, or requiring more than 6 's or ,s to print.
+ * @return
+ * true if the Pitch is more than a quadruple sharp/flat away from a natural,
+ * which usually indicates a logic error upstream, or if the name would not
+ * fit in 16 characters at all, in which case "ERR" is written to out instead.
+ * false otherwise.
  */
-void pitch_helmholtz(Pitch p, char *out);
+bool pitch_helmholtz(Pitch p, char *out);
 
 /**
  * Returns the ABC note name of a Pitch as a string.
  * You must pass a char buf[16] to store the result, which is returned via an
  * out-param.
- * Will truncate anything requiring accidentals more remote than quadruple
- * sharps/flats, or requiring more than 6 's or ,s to print.
+ * @return
+ * true if the Pitch's accidental goes beyond a double sharp/flat (ABC
+ * notation has no symbol for anything more remote), or if the name would not
+ * fit in 16 characters at all. In either case "ERR" is written to out instead.
+ * False otherwise.
  */
-void pitch_abc(Pitch p, char *out);
+bool pitch_abc(Pitch p, char *out);
 
 /**
  * Creates a MirrorAxis about which to invert Pitch vectors from two input SPN
@@ -717,9 +767,10 @@ static inline int axis_from_spn(char *p_str, char *q_str, MirrorAxis *out) {
 
 #ifdef MEANTONAL
 #undef MEANTONAL
-#include <math.h>
-#include <stdint.h>
 #include <stdio.h>
+#include <stdint.h>
+#include <math.h>
+#include <string.h>
 
 const Map2D WICKI_TO = {1, -3, 0, 1};
 const Map2D WICKI_FROM = {1, 3, 0, 1};
@@ -742,6 +793,13 @@ Pitch pitch_from_chroma(int chroma, int octave) {
         p.h += 2;
     }
     return p;
+}
+
+bool pitch_audible(Pitch p, TuningMap T) {
+    double f = to_hz(p, T);
+    if (f < 20.0) return false;
+    if (f > 20000.0) return false;
+    return true;
 }
 
 Pitch pitch_highest(Pitch arr[], int len, TuningMap T) {
@@ -991,6 +1049,7 @@ Pitch transpose_diatonic(Pitch p, int interval, TonalContext key) {
     return snap_diatonic(transpose_real(p, (Interval){interval, 0}), key);
 }
 
+
 typedef struct tnode {
     int value;
     struct tnode *left;
@@ -1109,19 +1168,26 @@ PitchClassSet pc_set_difference(PitchClassSet a, PitchClassSet b) {
     return result;
 }
 
-TuningMap tuning_map_from_fifth(double fifth, Pitch ref_pitch,
-                                double ref_freq) {
-    return (TuningMap){.ref_pitch = ref_pitch,
-                       .ref_freq = ref_freq,
-                       .centmap = (Map1D){fifth, 1200}};
+// A fifth outside this range can't produce a well-defined diatonic scale.
+static int fifth_supports_diatonic(double fifth) {
+    return fifth >= (1200.0 * 4 / 7) && fifth <= (1200.0 * 3 / 5);
 }
 
-TuningMap tuning_map_from_edo(int edo, Pitch ref_pitch, double ref_freq) {
+int tuning_map_from_fifth(double fifth, Pitch ref_pitch, double ref_freq,
+                          TuningMap *out) {
+    if (!fifth_supports_diatonic(fifth))
+        return 1;
+    *out = (TuningMap){.ref_pitch = ref_pitch,
+                       .ref_freq = ref_freq,
+                       .centmap = (Map1D){fifth, 1200}};
+    return 0;
+}
+
+int tuning_map_from_edo(int edo, Pitch ref_pitch, double ref_freq,
+                       TuningMap *out) {
     int fifth_steps = round(log2(1.5) * edo);
     double fifth = (float)fifth_steps * 1200 / edo;
-    TuningMap T = tuning_map_from_fifth(fifth, ref_pitch, ref_freq);
-
-    return T;
+    return tuning_map_from_fifth(fifth, ref_pitch, ref_freq, out);
 }
 
 double to_cents(Interval m, TuningMap T) {
@@ -1136,11 +1202,16 @@ double to_hz(Pitch p, TuningMap T) {
     return T.ref_freq * to_ratio(interval_between(T.ref_pitch, p), T);
 }
 
-EDOMap create_edo_map(int edo) {
+int create_edo_map(int edo, EDOMap *out) {
     int fifth_steps = (int)round(log2(1.5) * edo);
+    double fifth = (double)fifth_steps * 1200 / edo;
+    if (!fifth_supports_diatonic(fifth))
+        return 1;
+
     int whole = ((fifth_steps * 2) % edo + edo) % edo;
     int half = ((fifth_steps * -5) % edo + edo) % edo;
-    return (EDOMap){whole, half};
+    *out = (EDOMap){whole, half};
+    return 0;
 }
 
 const Pitch letters[7] = {
@@ -1347,58 +1418,82 @@ int pitch_from_abc(const char *s, Pitch *out) {
     return 0;
 }
 
-void pitch_spn(Pitch p, char *out) {
+bool pitch_spn(Pitch p, char *out) {
+    // Sized so that no individual snprintf call below can ever truncate:
+    // 1 (letter) + 11 (accidental, worst case "-2147483648b") + 11 (octave,
+    // worst case "-2147483648") + 1 (nul) = 24, with margin to spare.
+    char tmp[32];
     size_t pos = 0;
-    size_t cap = 8;
 
     char letter = pitch_letter(p) + 'A';
     int accidental = pitch_accidental(p);
     int octave = pitch_octave(p);
+    bool flagged = accidental > 4 || accidental < -4;
 
-    pos += snprintf(out + pos, cap - pos, "%c", letter);
+    pos += snprintf(tmp + pos, sizeof(tmp) - pos, "%c", letter);
 
     switch (accidental) {
     case 2:
-        pos += snprintf(out + pos, cap - pos, "x");
+        pos += snprintf(tmp + pos, sizeof(tmp) - pos, "x");
         break;
     case 1:
-        pos += snprintf(out + pos, cap - pos, "#");
+        pos += snprintf(tmp + pos, sizeof(tmp) - pos, "#");
         break;
     case 0:
         break;
     case -1:
-        pos += snprintf(out + pos, cap - pos, "b");
+        pos += snprintf(tmp + pos, sizeof(tmp) - pos, "b");
         break;
     case -2:
-        pos += snprintf(out + pos, cap - pos, "bb");
+        pos += snprintf(tmp + pos, sizeof(tmp) - pos, "bb");
         break;
     default:
         if (accidental > 0) {
-            pos += snprintf(out + pos, cap - pos, "%d#", accidental);
+            pos += snprintf(tmp + pos, sizeof(tmp) - pos, "%d#", accidental);
         } else {
-            pos += snprintf(out + pos, cap - pos, "%db", -accidental);
+            // Cast to avoid UB negating INT_MIN.
+            pos += snprintf(tmp + pos, sizeof(tmp) - pos, "%lldb",
+                             -(long long)accidental);
         }
         break;
     }
-    pos += snprintf(out + pos, cap - pos, "%d", octave);
+    pos += snprintf(tmp + pos, sizeof(tmp) - pos, "%d", octave);
+
+    if (pos >= 8) {
+        snprintf(out, 8, "ERR");
+        return true;
+    }
+
+    snprintf(out, 8, "%s", tmp);
+    return flagged;
 }
 
-void pitch_lily(Pitch p, char *out) {
-    size_t pos = 0;
+bool pitch_lily(Pitch p, char *out) {
     size_t cap = 16;
 
     char letter = pitch_letter(p) + 'a';
     int accidental = pitch_accidental(p);
-    if (accidental > 4)
-        accidental = 4;
-    if (accidental < -4)
-        accidental = -4;
     int octave = pitch_octave(p) - 3;
-    if (octave > 6)
-        octave = 6;
-    if (octave < -6)
-        octave = -6;
 
+    // LilyPond returns an error for accidentals beyond double sharps/flats
+    if (accidental > 2 || accidental < -2) {
+        snprintf(out, cap, "ERR");
+        return true;
+    }
+
+    // "'"/"," cost 1 char per unit of octave. Compute the total length up
+    // front (rather than looping to find out) so a huge vector can never
+    // turn into a multi-billion-iteration loop.
+    long long octave_mag = octave < 0 ? -(long long)octave : octave;
+    long long needed = 1 + 2 * (accidental < 0 ? -accidental : accidental) +
+                        octave_mag;
+
+    if (needed + 1 > (long long)cap) {
+        snprintf(out, cap, "ERR");
+        return true;
+    }
+
+    size_t pos = 0;
     pos += snprintf(out + pos, cap - pos, "%c", letter);
     while (accidental) {
         if (accidental > 0) {
@@ -1419,55 +1514,67 @@ void pitch_lily(Pitch p, char *out) {
             octave++;
         }
     }
+    return false;
 }
 
-void pitch_helmholtz(Pitch p, char *out) {
-    size_t pos = 0;
+bool pitch_helmholtz(Pitch p, char *out) {
     size_t cap = 16;
 
     char letter = pitch_letter(p);
     int accidental = pitch_accidental(p);
-    if (accidental > 4)
-        accidental = 4;
-    if (accidental < -4)
-        accidental = -4;
+    bool flagged = accidental > 4 || accidental < -4;
 
     int octave = pitch_octave(p) - 3;
-    if (octave > 6)
-        octave = 6;
     if (octave < 0) {
         octave++;
         letter += 'A';
     } else
         letter += 'a';
-    if (octave < -6)
-        octave = -6;
 
-    pos += snprintf(out + pos, cap - pos, "%c", letter);
-
+    // The accidental is rendered as text (bounded regardless of magnitude,
+    // same as pitch_spn), but the octave is rendered as repeated '/,
+    // (linear in magnitude), so its length has to be checked before
+    // looping.
+    char accidental_str[32];
     switch (accidental) {
     case 2:
-        pos += snprintf(out + pos, cap - pos, "x");
+        snprintf(accidental_str, sizeof(accidental_str), "x");
         break;
     case 1:
-        pos += snprintf(out + pos, cap - pos, "#");
+        snprintf(accidental_str, sizeof(accidental_str), "#");
         break;
     case 0:
+        accidental_str[0] = '\0';
         break;
     case -1:
-        pos += snprintf(out + pos, cap - pos, "b");
+        snprintf(accidental_str, sizeof(accidental_str), "b");
         break;
     case -2:
-        pos += snprintf(out + pos, cap - pos, "bb");
+        snprintf(accidental_str, sizeof(accidental_str), "bb");
         break;
     default:
         if (accidental > 0) {
-            pos += snprintf(out + pos, cap - pos, "%d#", accidental);
+            snprintf(accidental_str, sizeof(accidental_str), "%d#",
+                     accidental);
         } else {
-            pos += snprintf(out + pos, cap - pos, "%db", -accidental);
+            // Cast to avoid UB negating INT_MIN.
+            snprintf(accidental_str, sizeof(accidental_str), "%lldb",
+                     -(long long)accidental);
         }
         break;
     }
+
+    long long octave_mag = octave < 0 ? -(long long)octave : octave;
+    long long needed = 1 + (long long)strlen(accidental_str) + octave_mag;
+
+    if (needed + 1 > (long long)cap) {
+        snprintf(out, cap, "ERR");
+        return true;
+    }
+
+    size_t pos = 0;
+    pos += snprintf(out + pos, cap - pos, "%c", letter);
+    pos += snprintf(out + pos, cap - pos, "%s", accidental_str);
 
     while (octave) {
         if (octave > 0) {
@@ -1478,30 +1585,40 @@ void pitch_helmholtz(Pitch p, char *out) {
             octave++;
         }
     }
+    return flagged;
 }
 
-void pitch_abc(Pitch p, char *out) {
-    size_t pos = 0;
+bool pitch_abc(Pitch p, char *out) {
     size_t cap = 16;
 
     char letter = pitch_letter(p);
     int accidental = pitch_accidental(p);
-    if (accidental > 4)
-        accidental = 4;
-    if (accidental < -4)
-        accidental = -4;
+
+    // ABC notation has no symbol beyond a double sharp/flat (^^ / __)
+    if (accidental > 2 || accidental < -2) {
+        snprintf(out, cap, "ERR");
+        return true;
+    }
 
     int octave = pitch_octave(p) - 5;
-    if (octave > 6)
-        octave = 6;
     if (octave < 0) {
         octave++;
         letter += 'A';
     } else
         letter += 'a';
-    if (octave < -6)
-        octave = -6;
 
+    // The octave ("'"/",") is rendered as repeated characters, linear in
+    // magnitude, so its length has to be checked before looping.
+    long long accidental_mag = accidental < 0 ? -accidental : accidental;
+    long long octave_mag = octave < 0 ? -(long long)octave : octave;
+    long long needed = accidental_mag + 1 + octave_mag;
+
+    if (needed + 1 > (long long)cap) {
+        snprintf(out, cap, "ERR");
+        return true;
+    }
+
+    size_t pos = 0;
     while (accidental) {
         if (accidental > 0) {
             pos += snprintf(out + pos, cap - pos, "^");
@@ -1523,5 +1640,7 @@ void pitch_abc(Pitch p, char *out) {
             octave++;
         }
     }
+    return false;
 }
 #endif // MEANTONAL
+

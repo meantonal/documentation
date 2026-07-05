@@ -11,7 +11,13 @@ The functions listed here enable the parsing of `Pitch` vectors and derived type
 
 <Aside type="caution">
 
-These functions are quick and simple, but they are not especially robust. They can detect and signal some parsing errors, but do not rely on them to process user-enterred input in a serious application.
+These functions are quick and simple, but they are not especially robust. They can detect and signal some parsing errors, but do not rely on them to process user-entered input in a serious application.
+
+</Aside>
+
+<Aside type="note" title="Two different `bool` conventions">
+
+`pitch_spn` and `pitch_helmholtz` can render arbitrarily large accidentals as text (e.g. "5#"), so a `true` return from them is just a warning that the accidental is unusually large — the name is still rendered in full. `pitch_lily` and `pitch_abc` have no notation at all beyond a double sharp/flat, so for them `true` means rendering was refused outright, and `"ERR"` was written to `out` instead.
 
 </Aside>
 
@@ -29,7 +35,7 @@ Safe usage if the string is being passed in dynamically:
 
 ```c
 Pitch p;
-if (int pitch_from_spn(str, &p)) {
+if (pitch_from_spn(str, &p)) {
     // handle parsing error
 }
 ```
@@ -37,17 +43,22 @@ if (int pitch_from_spn(str, &p)) {
 ### `pitch_spn`
 
 ```c
-void pitch_spn(Pitch p, char *out);
+bool pitch_spn(Pitch p, char *out);
 ```
 
 Returns the [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation) name of a Pitch as a string. You must pass a `char` array with at least 8 characters to store the result, which is returned via an out-param.
+
+Returns `true` if the Pitch's accidental is more than a quadruple sharp/flat away from a natural — usually a sign of a logic error upstream — but the name is still rendered in full to `out` as long as it fits in the buffer. Also returns `true`, writing `"ERR"` to `out` instead, if the name genuinely doesn't fit in 8 characters (an extreme accidental or octave). Returns `false` otherwise.
 
 ```c
 Pitch p;
 pitch_from_spn("G#5", &p);
 
 char buf[8];
-pitch_spn(p, buf); // buf now holds the string "G#5"
+pitch_spn(p, buf); // buf holds "G#5", returns false
+
+pitch_from_spn("F#####4", &p); // an extreme accidental (+5), unlikely from real usage
+pitch_spn(p, buf); // buf holds "F5#4", returns true (flagged, but still rendered)
 ```
 
 ### `interval_from_spn`
@@ -62,7 +73,7 @@ Safe usage if the string is being passed in dynamically:
 
 ```c
 Interval m;
-if (int interval_from_spn(str1, str2, &p)) {
+if (interval_from_spn(str1, str2, &p)) {
     // handle parsing error
 }
 ```
@@ -81,7 +92,7 @@ Safe usage if the strings are being passed in dynamically:
 
 ```c
 MirrorAxis a;
-if (int axis_from_spn(str1, str2, &a)) {
+if (axis_from_spn(str1, str2, &a)) {
     // handle parsing error
 }
 
@@ -101,7 +112,7 @@ Safe usage if the string is being passed in dynamically:
 
 ```c
 Pitch p;
-if (int pitch_from_helmholtz(str, &p)) {
+if (pitch_from_helmholtz(str, &p)) {
     // handle parsing error
 }
 ```
@@ -109,17 +120,22 @@ if (int pitch_from_helmholtz(str, &p)) {
 ### `pitch_helmholtz`
 
 ```c
-void pitch_helmholtz(Pitch p, char *out);
+bool pitch_helmholtz(Pitch p, char *out);
 ```
 
 Returns the [Helmholtz pitch notation](https://en.wikipedia.org/wiki/Helmholtz_pitch_notation) name of a Pitch as a string. You must pass a `char` array with at least 16 characters to store the result, which is returned via an out-param.
+
+Returns `true` if the Pitch's accidental is more than a quadruple sharp/flat away from a natural — usually a sign of a logic error upstream — but the name is still rendered in full to `out` as long as it fits in the buffer. Also returns `true`, writing `"ERR"` to `out` instead, if the name genuinely doesn't fit in 16 characters (an extreme accidental or octave). Returns `false` otherwise.
 
 ```c
 Pitch p;
 pitch_from_helmholtz("g#'", &p);
 
 char buf[16];
-pitch_helmholtz(p, buf); // buf now holds the string "g#'"
+pitch_helmholtz(p, buf); // buf holds "g#'", returns false
+
+pitch_from_helmholtz("g#####'", &p); // an extreme accidental (+5), unlikely from real usage
+pitch_helmholtz(p, buf); // buf holds "g5#'", returns true (flagged, but still rendered)
 ```
 
 ## LilyPond Notation
@@ -136,7 +152,7 @@ Safe usage if the string is being passed in dynamically:
 
 ```c
 Pitch p;
-if (int pitch_from_lily(str, &p)) {
+if (pitch_from_lily(str, &p)) {
     // handle parsing error
 }
 ```
@@ -144,17 +160,22 @@ if (int pitch_from_lily(str, &p)) {
 ### `pitch_lily`
 
 ```c
-void pitch_lily(Pitch p, char *out);
+bool pitch_lily(Pitch p, char *out);
 ```
 
 Returns the [LilyPond](https://lilypond.org/) name of a Pitch as a string. You must pass a `char` array with at least 16 characters to store the result, which is returned via an out-param.
+
+Unlike `pitch_spn`/`pitch_helmholtz`, this is a hard limit: LilyPond has no symbol for anything beyond a double sharp/flat ("isis"/"eses"), so if the Pitch's accidental goes beyond ±2, `pitch_lily` makes no attempt to render a name at all — it immediately writes `"ERR"` to `out` and returns `true`. It also returns `true` (writing `"ERR"`) if the octave alone would overflow the 16-character buffer. Returns `false` otherwise.
 
 ```c
 Pitch p;
 pitch_from_lily("gis'", &p);
 
 char buf[16];
-pitch_lily(p, buf); // buf now holds the string "gis'"
+pitch_lily(p, buf); // buf holds "gis'", returns false
+
+pitch_from_spn("Fx#4", &p); // accidental of +3, beyond LilyPond's double sharp
+pitch_lily(p, buf); // buf holds "ERR", returns true
 ```
 
 ## ABC Notation
@@ -171,7 +192,7 @@ Safe usage if the string is being passed in dynamically:
 
 ```c
 Pitch p;
-if (int pitch_from_abc(str, &p)) {
+if (pitch_from_abc(str, &p)) {
     // handle parsing error
 }
 ```
@@ -179,16 +200,20 @@ if (int pitch_from_abc(str, &p)) {
 ### `pitch_abc`
 
 ```c
-void pitch_abc(Pitch p, char *out);
+bool pitch_abc(Pitch p, char *out);
 ```
 
 Returns the [ABC](https://abcnotation.com/) name of a Pitch as a string. You must pass a `char` array with at least 16 characters to store the result, which is returned via an out-param.
+
+Unlike `pitch_spn`/`pitch_helmholtz`, this is a hard limit: ABC notation has no symbol for anything beyond a double sharp/flat ("^^"/"__"), so if the Pitch's accidental goes beyond ±2, `pitch_abc` makes no attempt to render a name at all — it immediately writes `"ERR"` to `out` and returns `true`. It also returns `true` (writing `"ERR"`) if the octave alone would overflow the 16-character buffer. Returns `false` otherwise.
 
 ```c
 Pitch p;
 pitch_from_abc("^g'", &p);
 
 char buf[16];
-pitch_abc(p, buf); // buf now holds the string "^g'"
-```
+pitch_abc(p, buf); // buf holds "^g'", returns false
 
+pitch_from_spn("Fx#4", &p); // accidental of +3, beyond ABC's double sharp
+pitch_abc(p, buf); // buf holds "ERR", returns true
+```

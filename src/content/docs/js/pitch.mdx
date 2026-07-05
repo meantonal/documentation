@@ -294,6 +294,22 @@ p = SPN.toPitch("Bbb4")
 p.alterationIn(context); // -2, Bbb is too flat for this context
 ```
 
+### `audible`
+
+```ts
+audible(p: Pitch, T?: TuningMap): boolean;
+```
+
+Returns true if the passed-in `Pitch`'s frequency, as rendered by the given `TuningMap`, falls within the approximate range of human hearing (20Hz to 20kHz, inclusive of both bounds). Uses an optional `TuningMap` to determine the `Pitch`'s frequency; if no `TuningMap` is passed in, defaults to 12TET.
+
+```ts
+let p = SPN.toPitch("A4");
+Pitch.audible(p); // true, A4 = 440Hz
+
+p = SPN.toPitch("C-1");
+Pitch.audible(p); // false, C-1 (MIDI 0) is ~8.18Hz, below the 20Hz floor
+```
+
 ### `highest`
 
 ```ts

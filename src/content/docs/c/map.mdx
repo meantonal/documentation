@@ -1,6 +1,6 @@
 ---
 title: Map
-description: Reference page for the generic vector mapping funcitons.
+description: Reference page for the generic vector mapping functions.
 sidebar:
   order: 5
 ---
@@ -12,13 +12,13 @@ This page details functions that apply linear maps to generic 2d vectors. Many o
 ### `map_to_1d`
 
 ```c
-int map_to_1d(MapVec v, Map1d T);
+static inline double map_to_1d(MapVec v, Map1D T);
 ```
 
-This function allows an arbitrary `Map1d` matrix to multiply a `MapVec`, sending it to some integer. Allows things like:
+This function allows an arbitrary `Map1D` matrix to multiply a `MapVec`, sending it to some integer. Allows things like:
 
 ```c
-(int)map_to_1d((MapVec){p.w, p.h}, ED31);
+(double)map_to_1d((MapVec){p.w, p.h}, ED31);
 ```
 
 This would send any `Pitch` to a 31-tone equal temperament equivalent of MIDI numbering, such that:
@@ -58,10 +58,10 @@ Returns a new `Map1D`. Creating new maps from the composition of existing maps c
 ### `map_to_2d`
 
 ```c
-MapVec map_to_2d(MapVec v, Map2d T);
+static inline MapVec map_to_2d(MapVec v, Map2D T);
 ```
 
-This function allows an arbitrary `Map2d` matrix to multiply a `MapVec`. If it's an invertible matrix, this essentially facilitates a [change of basis](https://en.wikipedia.org/wiki/Change_of_basis). The returned vector is another `MapVec`.
+This function allows an arbitrary `Map2D` matrix to multiply a `MapVec`. If it's an invertible matrix, this essentially facilitates a [change of basis](https://en.wikipedia.org/wiki/Change_of_basis). The returned vector is another `MapVec`.
 
 This could be useful if working with generalised isomorphic keyboard layouts. For example, if reading numbers off a grid intended to represent a [Wicki-Hayden layout](https://en.wikipedia.org/wiki/Wicki%E2%80%93Hayden_pitch_layout), they could be parsed into Meantonal `Pitch` vectors simply:
 
@@ -98,18 +98,36 @@ Returns a new `Map2D`. Creating new maps from the composition of existing maps c
 ### `tuning_map_from_fifth`
 
 ```c
-TuningMap tuning_map_from_fifth(double fifth, Pitch ref_pitch, double ref_freq);
+int tuning_map_from_fifth(double fifth, Pitch ref_pitch, double ref_freq, TuningMap *out);
 ```
 
-Construct a [`TuningMap`](/c/types/#tuningmap) from the width of the fifth in the target tuning system in cents, along with a reference [`Pitch`](/c/types/#pitch) and its frequency in the tuning in Hertz (e.g. A4 = 440Hz).
+Construct a [`TuningMap`](/c/types/#tuningmap) from the width of the fifth in the target tuning system in cents, along with a reference [`Pitch`](/c/types/#pitch) and its frequency in the tuning in Hertz (e.g. A4 = 440Hz). The result is written to `out`.
+
+Returns 1 if `fifth` falls outside ~685.7¢ to 720¢ ($1200\times\frac{4}{7}$ to $1200\times\frac{3}{5}$), which cannot produce a well-defined diatonic scale — in this case `*out` is left untouched. Returns 0 otherwise.
+
+```c
+TuningMap T;
+if (tuning_map_from_fifth(700.0, (Pitch){29, 11}, 440, &T)) {
+    // handle invalid fifth
+}
+```
 
 ### `tuning_map_from_edo`
 
 ```c
-TuningMap tuning_map_from_edo(int edo, Pitch ref_pitch, double ref_freq);
+int tuning_map_from_edo(int edo, Pitch ref_pitch, double ref_freq, TuningMap *out);
 ```
 
-Construct a [`TuningMap`](/c/types/#tuningmap) for an EDO tuning system from the number of parts the octave will be divided into, along with a reference [`Pitch`](/c/types/#pitch) and its frequency in the tuning in Hertz (e.g. A4 = 440Hz).
+Construct a [`TuningMap`](/c/types/#tuningmap) for an EDO tuning system from the number of parts the octave will be divided into, along with a reference [`Pitch`](/c/types/#pitch) and its frequency in the tuning in Hertz (e.g. A4 = 440Hz). The result is written to `out`.
+
+Returns 1 if the fifth implied by `edo` falls outside ~685.7¢ to 720¢, which cannot produce a well-defined diatonic scale—in this case `*out` is left untouched. Returns 0 otherwise.
+
+```c
+TuningMap T;
+if (tuning_map_from_edo(12, (Pitch){29, 11}, 440, &T)) {
+    // handle EDO that can't support a diatonic scale
+}
+```
 
 ### `to_hz`
 
@@ -121,10 +139,12 @@ Returns the frequency of a [`Pitch`](/c/types/#pitch) in a given tuning in Hertz
 
 ```c
 Pitch p;
-pitch_from_spn("C4");
-TuningMap T = tuning_map_from_edo(12, "C4", CONCERT_C4);
+pitch_from_spn("C4", &p);
 
-to_hz(p); // 261.6255653
+TuningMap T;
+tuning_map_from_edo(12, p, CONCERT_C4, &T);
+
+to_hz(p, T); // 261.6255653
 ```
 
 ### `to_ratio`
@@ -137,8 +157,12 @@ Returns a decimal approximation of the ratio of an [`Interval`](/c/types/#interv
 
 ```c
 Interval m;
-interval_from_name("A6");
-TuningMap T = tuning_map_from_edo(31, "C4", CONCERT_C4);
+interval_from_name("A6", &m);
+
+Pitch ref;
+pitch_from_spn("C4", &ref);
+TuningMap T;
+tuning_map_from_edo(31, ref, CONCERT_C4, &T);
 
 to_ratio(m, T); // 1.7489046221194973 (very close to 7/4)
 ```
@@ -153,8 +177,12 @@ Returns the width of an [`Interval`](/c/types/#interval) in a given tuning syste
 
 ```c
 Interval m;
-interval_from_name("P5");
-TuningMap T = tuning_map_from_edo(31, "C4", CONCERT_C4);
+interval_from_name("P5", &m);
+
+Pitch ref;
+pitch_from_spn("C4", &ref);
+TuningMap T;
+tuning_map_from_edo(31, ref, CONCERT_C4, &T);
 
 to_cents(m, T); // 696.7741935483871
 ```
@@ -162,9 +190,18 @@ to_cents(m, T); // 696.7741935483871
 ### `create_edo_map`
 
 ```c
-EDOMap create_edo_map(int edo);
+int create_edo_map(int edo, EDOMap *out);
 ```
 
-Create an [`EDOMap`](/c/types/#edomap) that maps `Pitch` vectors to a well-ordered integer numbering for a given EDO tuning. For 12TET this is equivalent to standard MIDI, and for other EDO tunings a similar numbering is generated.
+Create an [`EDOMap`](/c/types/#edomap) that maps `Pitch` vectors to a well-ordered integer numbering for a given EDO tuning. For 12TET this is equivalent to standard MIDI, and for other EDO tunings a similar numbering is generated. The result is written to `out`.
+
+Returns 1 if the fifth implied by `edo` falls outside ~685.7¢ to 720¢, which cannot produce a well-defined diatonic scale — in this case `*out` is left untouched. Returns 0 otherwise.
 
 Used with [`pitch_to_number`](/c/pitch/#pitch_to_number) and [`pitches_compare`](/c/pitch/#pitches_compare).
+
+```c
+EDOMap T;
+if (create_edo_map(31, &T)) {
+    // handle EDO that can't support a diatonic scale
+}
+```

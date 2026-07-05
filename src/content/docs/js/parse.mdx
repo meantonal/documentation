@@ -16,16 +16,128 @@ Meantonal provides some classes to parse to and from common formats:
 
 Each provides static `toPitch` and `fromPitch` methods to convert between strings and [`Pitch`](/js/pitch) vectors.
 
-Using `SPN`, here's an example usage:
-
-```ts
-let p = SPN.toPitch("C#4");
-
-SPN.fromPitch(p); // "C#4");
-```
-
 <Aside type="tip" title="Note" icon="information">
 
 These helper classes are not robust enough to be used to parse LilyPond or ABC files directly. They are just for enterring and printing `Pitch` names in familiar formats.
 
 </Aside>
+
+## `SPN`
+
+### `toPitch`
+
+```ts
+static toPitch(spn: string): Pitch;
+```
+
+Creates a `Pitch` vector from a Scientific Pitch Notation string.
+
+```ts
+let p = SPN.toPitch("C#4");
+```
+
+### `fromPitch`
+
+```ts
+static fromPitch(p: Pitch): string;
+```
+
+Returns the SPN name of a `Pitch`. Throws an error if the `Pitch`'s accidental is altered by more than 8 sharps/flats — an arbitrary limit chosen to avoid handling strings of unbounded size, and because exceeding it almost certainly indicates a logic error upstream.
+
+```ts
+let p = SPN.toPitch("C#4");
+SPN.fromPitch(p); // "C#4"
+
+p = Pitch.fromChroma(63, 4); // an extreme accidental (+9), unlikely from real usage
+SPN.fromPitch(p); // Error: Cannot render SPN name: accidental (9) exceeds the maximum of ±8 sharps/flats.
+```
+
+## `LilyPond`
+
+### `toPitch`
+
+```ts
+static toPitch(str: string): Pitch;
+```
+
+Creates a `Pitch` vector from a LilyPond note name.
+
+```ts
+let p = LilyPond.toPitch("cis'");
+```
+
+### `fromPitch`
+
+```ts
+static fromPitch(p: Pitch): string;
+```
+
+Returns the (absolute) LilyPond name of a `Pitch`. Throws an error if the `Pitch`'s accidental goes beyond a double sharp/flat, or if its octave falls outside -3 to 11 (a healthy margin beyond the range of human hearing). LilyPond can't represent either case, and both almost always indicate a logic error upstream.
+
+```ts
+let p = LilyPond.toPitch("cis'");
+LilyPond.fromPitch(p); // "cis'"
+
+p = Pitch.fromChroma(21, 4); // accidental of +3, beyond LilyPond's double sharp
+LilyPond.fromPitch(p); // Error: Cannot render LilyPond name: accidental (3) exceeds the double sharp/flat limit (±2).
+```
+
+## `Helmholtz`
+
+### `toPitch`
+
+```ts
+static toPitch(str: string): Pitch;
+```
+
+Creates a `Pitch` vector from a Helmholtz note name.
+
+```ts
+let p = Helmholtz.toPitch("c#'");
+```
+
+### `fromPitch`
+
+```ts
+static fromPitch(p: Pitch): string;
+```
+
+Returns the Helmholtz note name of a `Pitch`. Throws an error if the `Pitch`'s accidental is altered by more than 8 sharps/flats — an arbitrary limit chosen to avoid handling strings of unbounded size, and because it almost always indicates a logic error upstream.
+
+```ts
+let p = Helmholtz.toPitch("c#'");
+Helmholtz.fromPitch(p); // "c#'"
+
+p = Pitch.fromChroma(70, 4); // an extreme accidental (+10), unlikely from real usage
+Helmholtz.fromPitch(p); // Error: Cannot render Helmholtz name: accidental (10) exceeds the maximum of ±8 sharps/flats.
+```
+
+## `ABC`
+
+### `toPitch`
+
+```ts
+static toPitch(str: string): Pitch;
+```
+
+Creates a `Pitch` vector from an ABC note name.
+
+```ts
+let p = ABC.toPitch("^c'");
+```
+
+### `fromPitch`
+
+```ts
+static fromPitch(p: Pitch): string;
+```
+
+Returns the ABC note name of a `Pitch`. Throws an error if the `Pitch`'s accidental goes beyond a double sharp/flat, or if its octave falls outside -3 to 11 (a healthy margin beyond the range of human hearing). ABC notation can't represent either case, and both almost always indicate a logic error upstream.
+
+```ts
+let p = ABC.toPitch("^c'");
+ABC.fromPitch(p); // "^c'"
+
+p = Pitch.fromChroma(21, 4); // accidental of +3, beyond ABC's double sharp
+ABC.fromPitch(p); // Error: Cannot render ABC name: accidental (3) exceeds the double sharp/flat limit (±2).
+```

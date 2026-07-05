@@ -173,11 +173,18 @@ constructor(
     fifth: number,
     referencePitch?: string,
     referenceFreq?: number
-    midiMap?: Map1D;
 );
 ```
 
 Creates a `TuningMap` instance manually.
+
+Throws an error if the fifth implied by `fifth` (in cents) falls outside ~685.7¢ to 720¢ ($1200\times\frac{4}{7}$ to $1200\times\frac{3}{5}$), which cannot produce a well-defined diatonic scale.
+
+```ts
+const T = new TuningMap(700); // a fifth of exactly 700 cents (12TET)
+
+new TuningMap(600); // Error: TuningMap requires a fifth between ~685.7¢ and 720¢ to produce a well - defined diatonic.
+```
 
 ### `fromEDO`
 
@@ -193,14 +200,18 @@ If you're working with EDO tuning system, it can be more convenient to initialis
 
 As with the class constructor, if the reference `Pitch` and its frequency are not specified, defaults to C4 = 261.6255653Hz.
 
+Throws an error if the fifth implied by `edo` falls outside ~685.7¢ to 720¢, which cannot produce a well-defined diatonic scale.
+
 ```ts
 const T = TuningMap.fromEDO(31);
 
-let p = Pitch("C4");
+let p = SPN.toPitch("C4");
 T.toHz(p); // ~261.63Hz
 
-let m = Interval("M3");
+let m = Interval.fromName("M3");
 T.toCents(m); // ~387.10 cents
+
+TuningMap.fromEDO(2); // Error: 2-EDO does not support a diatonic scale.
 ```
 
 ### `toHz`
@@ -262,6 +273,14 @@ constructor(edo: number);
 ```
 
 Create an `EDOMap` instance by simply specifying the number of parts the octave will be divided into.
+
+Throws an error if the fifth implied by `edo` falls outside ~685.7¢ to 720¢, which cannot produce a well-defined diatonic scale.
+
+```ts
+const T = new EDOMap(31);
+
+new EDOMap(2); // Error: 2-EDO does not support a diatonic scale.
+```
 
 ### `toNumber`
 

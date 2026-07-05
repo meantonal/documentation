@@ -144,7 +144,7 @@ pitches_enharmonic(p, q, 12); // false; Gbb and Ex are not enharmonic in 12tet
 int pitch_to_number(Pitch p, EDOMap T);
 ```
 
-Uses an [`EDOMap`](/c/types/#edomap) produced by [`create_edo_map`](/c/map/#creape_edo_map). Returns an ordered pitch numbering for the passed `Pitch` as an integer. For 12TET, this will be the ordinary MIDI value for a given `Pitch`, but for other EDO tunings it provides an ordered MIDI-equvalent mapping.
+Uses an [`EDOMap`](/c/types/#edomap) produced by [`create_edo_map`](/c/map/#create_edo_map). Returns an ordered pitch numbering for the passed `Pitch` as an integer. For 12TET, this will be the ordinary MIDI value for a given `Pitch`, but for other EDO tunings it provides an ordered MIDI-equvalent mapping.
 
 ### `pitches_compare`
 
@@ -152,7 +152,7 @@ Uses an [`EDOMap`](/c/types/#edomap) produced by [`create_edo_map`](/c/map/#crea
 int pitches_compare(Pitch p, Pitch q, EDOMap T);
 ```
 
-Uses an [`EDOMap`](/c/types/#edomap) produced by [`create_edo_map`](/c/map/#creape_edo_map). In the specified EDO:
+Uses an [`EDOMap`](/c/types/#edomap) produced by [`create_edo_map`](/c/map/#create_edo_map). In the specified EDO:
 - Returns a positive number if p is above q.
 - Returns a negative value if p is below q.
 - Returns 0 if p and q are enharmonic.
@@ -163,15 +163,37 @@ pitch_from_spn("C#4", &p);
 Pitch q;
 pitch_from_spn("Db4", &q);
 
-EDOMap T = create_edo_map(53);
+EDOMap T;
+create_edo_map(53, &T);
 pitches_compare(p, q, T); // 1
 
-T = create_edo_map(31);
+create_edo_map(31, &T);
 pitches_compare(p, q, T); // -1
 
-T = create_edo_map(12);
+create_edo_map(12, &T);
 pitches_compare(p, q, T); // 0
 
+```
+
+### `pitch_audible`
+
+```c
+bool pitch_audible(Pitch p, TuningMap T);
+```
+
+Predicate function that checks whether a `Pitch`'s frequency, as rendered by the passed-in [`TuningMap`](/c/types/#tuningmap), falls within the approximate range of human hearing (20Hz to 20kHz, inclusive of both bounds).
+
+```c
+Pitch p;
+pitch_from_spn("A4", &p);
+
+TuningMap T;
+tuning_map_from_edo(12, (Pitch){29, 11}, 440, &T);
+
+pitch_audible(p, T); // true, A4 = 440Hz
+
+pitch_from_spn("C-1", &p);
+pitch_audible(p, T); // false, C-1 (MIDI 0) is ~8.18Hz, below the 20Hz floor
 ```
 
 ### `pitch_highest`
@@ -190,7 +212,8 @@ for (int i = 0; i < 10; i++) {
     pitch_from_spn(names[i], arr + i);
 }
 
-TuningMap T = tuning_map_from_edo(12, (Pitch){29, 11}, 440);
+TuningMap T;
+tuning_map_from_edo(12, (Pitch){29, 11}, 440, &T);
 
 Pitch highest = pitch_highest(arr, 10, T); // highest now holds Gb4
 ```
@@ -211,7 +234,8 @@ for (int i = 0; i < 10; i++) {
     pitch_from_spn(names[i], arr + i);
 }
 
-TuningMap T = tuning_map_from_edo(12, (Pitch){29, 11}, 440);
+TuningMap T;
+tuning_map_from_edo(12, (Pitch){29, 11}, 440, &T);
 
 Pitch lowest = pitch_lowest(arr, 10, T); // lowest now holds B#3
 ```
@@ -235,10 +259,11 @@ for (int i = 0; i < 10; i++) {
 Pitch target;
 pitch_from_spn("Gbb4", &target);
 
-TuningMap T = tuning_map_from_edo(12, (Pitch){29, 11}, 440);
+TuningMap T;
+tuning_map_from_edo(12, (Pitch){29, 11}, 440, &T);
 Pitch nearest = pitch_nearest(target, arr, 10, T); // nearest now holds F4
 
-T = tuning_map_from_edo(31, reference, 440);
+tuning_map_from_edo(31, (Pitch){29, 11}, 440, &T);
 nearest = pitch_nearest(target, arr, 10, T); // nearest now holds Ex4
 ```
 
