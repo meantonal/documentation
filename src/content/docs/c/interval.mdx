@@ -74,7 +74,15 @@ Returns the number of perfect fifths (signed) separating an `Interval` from the 
 static inline bool interval_diatonic(Interval m);
 ```
 
-Check whether a given interval is capable of occurring diatonically (i.e. is found within the major scale).
+Returns true if an `Interval` is capable of occurring diatonically (i.e. is found within the major scale).
+
+### `interval_tonal`
+
+```c
+static inline bool interval_tonal(Interval m);
+```
+
+Returns true if an `Interval` is capable of occurring in a tonal context, including via chromatically altered degrees (i.e. is comprised of notes at most a half step away from notes in a shared diatonic scale).
 
 ### `interval_quality`
 

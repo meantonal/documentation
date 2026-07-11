@@ -115,6 +115,25 @@ m = Interval.fromName("A6");
 m.isDiatonic; // false
 ```
 
+### `isTonal`
+
+```ts
+get isTonal(): boolean;
+```
+
+Affirms whether a given interval is capable of occurring in a tonal context, whether diatonically or chromatically (i.e. whether it is formed between notes that could be within a half step's distance of a shared diatonic scale).
+
+```ts
+let m = Interval.fromName("P5");
+m.isTonal; // true
+
+m = Interval.fromName("A6");
+m.isTonal; // true
+
+m = Interval.fromName("ddd6");
+m.isTonal; // false
+```
+
 ### `quality`
 
 ```ts
