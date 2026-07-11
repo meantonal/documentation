@@ -82,6 +82,25 @@ p = Pitch.fromChroma(21, 4); // accidental of +3, beyond LilyPond's double sharp
 LilyPond.fromPitch(p); // Error: Cannot render LilyPond name: accidental (3) exceeds the double sharp/flat limit (±2).
 ```
 
+### `relative`
+
+```ts
+static relative(start: Pitch): RelativeParser;
+```
+
+Returns a new instance of a relative mode LilyPond parser, with a `.toPitch` method that works exactly like the LilyPond.toPitch static method, but positioning each `Pitch` relative to the most recently parsed `Pitch`, before adjusting via octave marks.
+
+```ts
+let p = SPN.toPitch("C4");
+let parser = LilyPond.relative(p);
+
+p = parser.toPitch("g");   // G3, since it's the nearest G to C4
+p = parser.toPitch("fis"); // F#3, since it's the nearest F# to G3
+p = parser.toPitch("d'");  // D4, since the ' mark adjusts the octave by +1
+```
+
+Relative mode is often more convenient to reason around when entering pitches by hand.
+
 ## `Helmholtz`
 
 ### `toPitch`
