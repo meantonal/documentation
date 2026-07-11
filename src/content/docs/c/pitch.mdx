@@ -27,6 +27,22 @@ Pitch pitch_from_chroma(int chroma, int octave);
 
 Creates a `Pitch` vector from a specified chroma (signed distance from C in 5ths) and octave (following [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) numbering).
 
+### `pitch_from_degree`
+
+```c
+Pitch pitch_from_degree(enum Degree degree, int alteration, int octave, TonalContext key);
+```
+
+Creates a `Pitch` vector from a specified scale degree (0-indexed, tonic is 0) and chromatic alteration (0 is diatonic) within a `TonalContext`, along with its octave number (using [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) octave numbering).
+
+Note that this function is quite happy to produce a `Pitch` that could never reasonably occur in a given context, e.g. Gbb4 in the key of C# major.
+
+```c
+TonalContext context;
+context_from_str("Eb", MAJOR, &key);
+Pitch p = pitch_from_degree(MEDIANT, -1, 4, key); // Gb4
+```
+
 ## Common Queries
 
 These functions query commonly required information from `Pitch` vectors.

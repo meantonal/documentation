@@ -25,7 +25,7 @@ Safe usage if the string is being passed in dynamically:
 
 ```c
 TonalContext key;
-if (int context_from_str(str, &key)) {
+if (context_from_str(str, MAJOR, &key)) {
     // handle parsing error
 }
 ```
@@ -75,10 +75,10 @@ Remember to check for both `FOREIGN_DEG_SHARP` and `FOREIGN_DEG_FLAT` returns fr
 ### `degree_chroma`
 
 ```c
-static inline int degree_chroma(enum Degree degree, TonalContext key);
+int degree_chroma(enum Degree degree, int alteration, TonalContext key);
 ```
 
-Produces the chroma (signed distance from C measured in 5ths) of the diatonic version of the specified degree in the passed-in `TonalContext`.
+Produces the chroma (signed distance from C measured in perfect 5ths) of the variant of the passed-in scale degree (0-indexed so the tonic is 0) that matches the specified alteration with respect to the passed-in `TonalContext`.
 
 ## Transformations
 

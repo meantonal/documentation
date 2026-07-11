@@ -41,6 +41,24 @@ p.w; // 25
 p.h; // 10
 ```
 
+### `fromDegree`
+
+```ts
+static fromDegree(degree: number,
+                  alteration: number,
+                  octave: number,
+                  key: TonalContext): Pitch;
+```
+
+Creates a `Pitch` vector from a specified scale degree (0-indexed, tonic is 0) and chromatic alteration (0 is diatonic) within the passed-in `TonalContext`, along with its octave number (using [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) octave numbering).
+
+Note that this function is quite happy to produce a `Pitch` that could never reasonably occur in a given context, e.g. Gbb4 in the key of C# major.
+
+```c
+context = TonalContext.fromStrings("Eb", "major");
+p = Pitch.fromDegree(2, -1, 4, context); // Gb4
+```
+
 ## Common Queries
 
 The following methods extract information from a `Pitch` vector.
