@@ -226,3 +226,17 @@ typedef struct {
 ```
 
 Created with [`pitch_to_standard`](/c/pitch/#pitch_to_standard) from a regular `Pitch`. More rarely parsed into a `Pitch` using [`pitch_from_standard`](/c/pitch/#pitch_from_standard).
+
+## Parser State
+
+### `LilyParseContext`
+
+The `LilyParseContext` type carries the state needed to parse a sequence of LilyPond pitches in relative mode: the previously-parsed `Pitch`, against which the next pitch's octave is resolved.
+
+```c
+typedef struct {
+    Pitch previous;
+} LilyParseContext;
+```
+
+Created by [`lily_parse_context_init`](/c/parse/#lily_parse_context_init) and updated automatically by each call to [`pitch_from_relative_lily`](/c/parse/#pitch_from_relative_lily).

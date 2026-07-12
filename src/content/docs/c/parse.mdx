@@ -15,12 +15,6 @@ These functions are quick and simple, but they are not especially robust. They c
 
 </Aside>
 
-<Aside type="note" title="Two different `bool` conventions">
-
-`pitch_spn` and `pitch_helmholtz` can render arbitrarily large accidentals as text (e.g. "5#"), so a `true` return from them is just a warning that the accidental is unusually large — the name is still rendered in full. `pitch_lily` and `pitch_abc` have no notation at all beyond a double sharp/flat, so for them `true` means rendering was refused outright, and `"ERR"` was written to `out` instead.
-
-</Aside>
-
 ## Scientific Notation
 
 ### `pitch_from_spn`
@@ -176,6 +170,51 @@ pitch_lily(p, buf); // buf holds "gis'", returns false
 
 pitch_from_spn("Fx#4", &p); // accidental of +3, beyond LilyPond's double sharp
 pitch_lily(p, buf); // buf holds "ERR", returns true
+```
+
+### `lily_parse_context_init`
+
+```c
+LilyParseContext lily_parse_context_init(Pitch p);
+```
+
+Creates a [`LilyParseContext`](/c/types/#lilyparsecontext) for parsing a sequence of LilyPond pitches in relative mode, seeded with `p` as the starting reference pitch — equivalent to the pitch written immediately after `\relative` in real LilyPond input.
+
+```c
+Pitch p;
+pitch_from_lily("c'", &p); // middle C
+
+LilyParseContext ctx = lily_parse_context_init(p);
+```
+
+### `pitch_from_relative_lily`
+
+```c
+int pitch_from_relative_lily(LilyParseContext *ctx, const char *s, Pitch *out);
+```
+
+Parses a `Pitch` from LilyPond notation in relative mode. Rather than reading an absolute octave from `s`, the octave is chosen so the parsed pitch falls within a fourth of `ctx->previous`, after which any `'`/`,` marks present in `s` each shift the result a further octave, same as in absolute mode. Outputs via an out-param, and returns 1 if there is a parsing error, same as `pitch_from_lily`.
+
+`ctx->previous` is updated to the parsed `Pitch` after every successful call, so a single `LilyParseContext` can just be threaded straight through a run of notes, mirroring how `\relative` mode works in real LilyPond input.
+
+```c
+Pitch p;
+pitch_from_lily("c'", &p); // middle C
+LilyParseContext ctx = lily_parse_context_init(p);
+
+Pitch out;
+pitch_from_relative_lily(&ctx, "e", &out);  // e', a third above middle C
+pitch_from_relative_lily(&ctx, "g", &out);  // g', a third above that
+pitch_from_relative_lily(&ctx, "c,", &out); // back down to middle C
+```
+
+Safe usage if the string is being passed in dynamically:
+
+```c
+Pitch out;
+if (pitch_from_relative_lily(&ctx, str, &out)) {
+    // handle parsing error
+}
 ```
 
 ## ABC Notation
