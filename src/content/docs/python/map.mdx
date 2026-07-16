@@ -1,0 +1,322 @@
+---
+title: Map
+description: An overview of the MapVec, Map1D, Map2D, TuningMap and EDOMap classes in the Python implementation.
+sidebar:
+  order: 4
+---
+
+The classes in this section allow arbitrary $1\times2$ or $2\times2$ matrices to be multiplied by vectors.
+
+## `MapVec`
+
+The `MapVec` provides a generic vector type that 2-dimensional mapping operations can return, and provides methods to be converted into a [`Pitch`](/python/pitch) or [`Interval`](/python/interval) vector as required.
+
+`MapVec` follows the shape of `Pitch` and `Interval`, exposing two fields:
+
+```python
+x: float
+y: float
+```
+
+### Class Constructor
+
+```python
+MapVec(x: float, y: float)
+```
+
+Simply pass in coordinates to instantiate a vector:
+
+```python
+v = MapVec(12, 5)
+```
+
+### `to_pitch`
+
+```python
+MapVec.to_pitch() -> Pitch
+```
+
+Converts a `MapVec` into a `Pitch` vector.
+
+```python
+v = MapVec(25, 10)
+p = v.to_pitch()
+
+p.w  # 25
+p.h  # 10
+```
+
+### `to_interval`
+
+```python
+MapVec.to_interval() -> Interval
+```
+
+Converts a `MapVec` into an `Interval` vector.
+
+```python
+v = MapVec(5, 2)
+m = v.to_interval()
+
+m.w  # 5
+m.h  # 2
+```
+
+## `Map1D`
+
+A `Map1D` is a $1\times2$ matrix, used to map a 2-dimensional vector to a 1-dimensional number. Conceptually, many of Meantonal's `Pitch` and `Interval` queries utilise this principle under the hood (see the [Learn](/learn/maps) page for a detailed explanation).
+
+### Class Constructor
+
+```python
+Map1D(m0: float, m1: float)
+```
+
+Creates a matrix $[m_0, m_1]$:
+
+```python
+A = Map1D(5, 3)
+```
+
+### `map`
+
+```python
+Map1D.map(v: MapVec | Pitch | Interval) -> float
+```
+
+Carries out the mapping operation on the passed in vector. Result will be a number.
+
+```python
+A = Map1D(5, 3)  # 31EDO mapping matrix
+p = SPN.to_pitch("G4")
+
+A.map(p)  # 173, an ordered MIDI-style numbering for 31EDO
+```
+
+### `compose`
+
+```python
+Map1D.compose(map: Map2D) -> Map1D
+```
+
+Composes the `Map1D` instance with a passed in `Map2D`; essentially carries out matrix multiplication:
+
+$$
+[a_0, a_1]
+\begin{bmatrix} b_{00} & b_{01} \\ b_{10} & b_{11} \end{bmatrix}
+= [c_0, c_1]
+$$
+
+Returns a new `Map1D`. Creating new maps from the composition of existing maps can save on unnecessary computation.
+
+## `Map2D`
+
+A `Map2D` is a $2\times2$ matrix, used to map a 2-dimensional vector to another 2-dimensional vector. Essentially effects a change of coordinate system (see the [Learn](/learn/maps) page for a detailed explanation).
+
+### Class Constructor
+
+```python
+Map2D(m00: float, m01: float, m10: float, m11: float)
+```
+
+Creates a matrix: $\begin{bmatrix} m_{00} & m_{01} \\ m_{10} & m_{11} \end{bmatrix}$
+
+```python
+A = Map2D(1, 2, 3, 4)
+```
+
+### `map`
+
+```python
+Map2D.map(v: MapVec | Pitch | Interval) -> MapVec
+```
+
+Carries out the mapping operation on the passed in vector. Result will be a generic `MapVec`.
+
+```python
+A = Map2D(2, -5, -1, 3)  # basis change: (w, h) => (P5, P8)
+p = SPN.to_pitch("E5")
+
+A.map(p)  # MapVec(x=4, y=4): E5 is 4 fifths and 4 octaves above C-1
+```
+
+### `compose`
+
+```python
+Map2D.compose(map: Map2D) -> Map2D
+```
+
+Composes the `Map2D` instance with a passed in `Map2D`; essentially carries out matrix multiplication:
+
+$$
+\begin{bmatrix} a_{00} & a_{01} \\ a_{10} & a_{11} \end{bmatrix}
+\begin{bmatrix} b_{00} & b_{01} \\ b_{10} & b_{11} \end{bmatrix}
+=
+\begin{bmatrix} c_{00} & c_{01} \\ c_{10} & c_{11} \end{bmatrix}
+$$
+
+Returns a new `Map2D`. Creating new maps from the composition of existing maps can save on unnecessary computation.
+
+## `TuningMap`
+
+A `TuningMap` represents a map onto a given tuning system, and is used to produce frequency values for [`Pitch`](/python/pitch) vectors in that tuning. It is specified in terms of:
+- The width of its fifth in cents.
+- The name of a reference pitch in [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation).
+- The frequency of that reference pitch in Hz.
+
+If no reference pitch is given, the default is C4 = 261.6255653Hz. This is equivalent to A4 = 440Hz in 12TET, but is centered about C4.
+
+### Class Constructor
+
+```python
+TuningMap(fifth: float,
+          reference_pitch: str = "C4",
+          reference_freq: float = 261.6255653)
+```
+
+Creates a `TuningMap` instance manually.
+
+Raises a `ValueError` if the fifth implied by `fifth` (in cents) falls outside ~685.7¢ to 720¢ ($1200\times\frac{4}{7}$ to $1200\times\frac{3}{5}$), which cannot produce a well-defined diatonic scale.
+
+```python
+T = TuningMap(700)  # a fifth of exactly 700 cents (12TET)
+
+TuningMap(600)  # ValueError: TuningMap requires a fifth between ~685.7¢ and 720¢ to produce a well-defined diatonic.
+```
+
+### `from_edo`
+
+```python
+TuningMap.from_edo(edo: int,
+                   reference_pitch: str = "C4",
+                   reference_freq: float = 261.6255653) -> TuningMap
+```
+
+If you're working with an EDO tuning system, it can be more convenient to initialise a `TuningMap` by specifying the number of parts the octave is divided into rather than the specific width of a perfect fifth in cents within that system. This class method allows just that.
+
+As with the class constructor, if the reference `Pitch` and its frequency are not specified, defaults to C4 = 261.6255653Hz.
+
+Raises a `ValueError` if the fifth implied by `edo` falls outside ~685.7¢ to 720¢, which cannot produce a well-defined diatonic scale.
+
+```python
+T = TuningMap.from_edo(31)
+
+p = SPN.to_pitch("C4")
+T.to_hz(p)  # ~261.63Hz
+
+m = Interval.from_name("M3")
+T.to_cents(m)  # ~387.10 cents
+
+TuningMap.from_edo(2)  # ValueError: 2-EDO does not support a diatonic scale.
+```
+
+### `to_hz`
+
+```python
+TuningMap.to_hz(p: Pitch) -> float
+```
+
+Returns the frequency of the passed-in `Pitch` in Hertz.
+
+```python
+T = TuningMap.from_edo(12, "A4", 440)
+
+p = SPN.to_pitch("A4")
+T.to_hz(p)  # 440.0
+
+p = SPN.to_pitch("A5")
+T.to_hz(p)  # 880.0
+```
+
+### `to_cents`
+
+```python
+TuningMap.to_cents(m: Interval) -> float
+```
+
+Returns the width of the passed in `Interval` in cents.
+
+```python
+T = TuningMap.from_edo(12)
+
+m = Interval.from_name("M3")
+T.to_cents(m)  # 400.0
+```
+
+### `to_ratio`
+
+```python
+TuningMap.to_ratio(m: Interval) -> float
+```
+
+Returns the ratio of the passed `Interval` as a decimal number.
+
+```python
+T = TuningMap.from_edo(31)
+
+m = Interval.from_name("A6")
+T.to_ratio(m)  # 1.7489046221194973
+```
+
+## `EDOMap`
+
+This handy class creates a map to a well-ordered integer numbering for a given EDO tuning. For 12TET this is equivalent to standard MIDI, and for other EDO tunings a similar numbering is generated.
+
+### Class Constructor
+
+```python
+EDOMap(edo: int)
+```
+
+Create an `EDOMap` instance by simply specifying the number of parts the octave will be divided into.
+
+Raises a `ValueError` if the fifth implied by `edo` falls outside ~685.7¢ to 720¢, which cannot produce a well-defined diatonic scale.
+
+```python
+T = EDOMap(31)
+
+EDOMap(2)  # ValueError: 2-EDO does not support a diatonic scale.
+```
+
+### `to_number`
+
+```python
+EDOMap.to_number(p: Pitch) -> int
+```
+
+Returns an ordered pitch numbering for the passed `Pitch` as an integer. For 12TET, this will be the ordinary MIDI value for a given `Pitch`, but for other EDO tunings it provides an ordered MIDI-equivalent mapping.
+
+```python
+T1 = EDOMap(12)
+T2 = EDOMap(31)
+
+p = SPN.to_pitch("C4")
+
+T1.to_number(p)  # 60
+T2.to_number(p)  # 155
+```
+
+### `compare`
+
+```python
+EDOMap.compare(p: Pitch, q: Pitch) -> int
+```
+
+In the specified EDO:
+- Returns a positive number if p is above q.
+- Returns a negative value if p is below q.
+- Returns 0 if p and q are enharmonic.
+
+```python
+p = SPN.to_pitch("C#4")
+q = SPN.to_pitch("Db4")
+
+T = EDOMap(53)
+T.compare(p, q)  # 1
+
+T = EDOMap(31)
+T.compare(p, q)  # -1
+
+T = EDOMap(12)
+T.compare(p, q)  # 0
+```

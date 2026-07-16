@@ -1,0 +1,61 @@
+---
+title: Overview
+description: An introduction to the Python implementation of Meantonal.
+sidebar:
+  order: 0
+---
+
+import { LinkCard, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+
+This reference details the classes and methods provided by the Python implementation of Meantonal.
+
+External links to the project repo and PyPI page can be found below.
+
+<CardGrid>
+  <LinkCard title="GitHub repository" href="https://github.com/meantonal/meantonal-python" />
+  <LinkCard title="PyPI package" href="https://pypi.org/project/meantonal/" />
+</CardGrid>
+
+If you haven't already, get started by installing the `meantonal` package from PyPI:
+
+<Tabs>
+  <TabItem label="Bash">
+```bash frame=none
+pip install meantonal
+```
+  </TabItem>
+</Tabs>
+
+## Conventions
+
+The Python implementation mirrors the [JS implementation](/js) class for class and method for method, adapted to Python idiom:
+
+- Method and property names are `snake_case`: `SPN.toPitch` becomes `SPN.to_pitch`, `Interval.fromName` becomes `Interval.from_name`, and so on. Class names are unchanged.
+- Derived values that are getters in TypeScript are properties in Python, accessed identically: `p.midi`, `m.quality`, `m.name`.
+- Anywhere the JS implementation throws an `Error`, the Python implementation raises a `ValueError` with the same message.
+- Range methods like [`Pitch.range.diatonic`](/python/pitch/#rangediatonic) return generators; iterate them with `for`, or collect them with `list()`.
+- All vector classes support `==` structural equality and have a useful `repr()`.
+
+### Operators
+
+Uniquely to the Python implementation, [`Pitch`](/python/pitch) and [`Interval`](/python/interval) support natural arithmetic through operator overloading, in the style of `datetime`/`timedelta`. A `Pitch` is a *point* and an `Interval` is a *displacement*, so:
+
+```python
+from meantonal import SPN, Interval
+
+p = SPN.to_pitch("C4")
+m = Interval.from_name("M3")
+
+q = p + m  # E4  -- same as p.transpose_real(m)
+q - p      # M3  -- same as Interval.between(p, q)
+p - m      # Ab3 -- transpose down
+m + m      # A5  -- same as m.add(m)
+-m         # descending M3 -- same as m.negative
+m * 3      # A7  -- same as m.times(3)
+```
+
+`Pitch + Pitch` is deliberately undefined (adding two points is meaningless) and raises a `TypeError`.
+
+The named methods (`add`, `subtract`, `times`, `transpose_real`, `between`, …) are all still present, keeping the vocabulary consistent across the JS, Python and C implementations.
+
+If you want to get a better understanding of how Meantonal works under the hood, check out the [Learn](/learn) category.

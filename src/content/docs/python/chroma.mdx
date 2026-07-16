@@ -1,0 +1,40 @@
+---
+title: Chroma
+description: An overview of the Chroma class and its methods in the Python implementation.
+sidebar:
+  order: 7
+---
+
+The Chroma class contains some static helper methods for extracting information from "chroma", the signed distance of a Pitch from C or an interval from the unison in perfect 5ths.
+
+## Methods
+
+### `to_letter`
+
+```python
+Chroma.to_letter(chroma: int) -> str  # static method
+```
+
+Returns the letter component of the pitch class name represented by a given Pitch chroma.
+
+```python
+Chroma.to_letter(0)  # "C"
+Chroma.to_letter(6)  # "F" (the letter component of F#)
+```
+
+### `to_accidental`
+
+```python
+Chroma.to_accidental(chroma: int) -> int  # static method
+```
+
+Returns the accidental component of the pitch class name represented by a given Pitch chroma.
+- 0 is natural.
+- +1 / -1 is sharp/flat.
+- +2 / -2 is double sharp/double flat.
+etc. for arbitrarily remote accidentals.
+
+```python
+Chroma.to_accidental(0)  # 0
+Chroma.to_accidental(6)  # 1 (F# is sharp)
+```

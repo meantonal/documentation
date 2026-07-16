@@ -1,0 +1,38 @@
+---
+title: MirrorAxis
+description: An overview of the MirrorAxis class in the Python implementation, used in Pitch inversion.
+sidebar:
+  order: 5
+---
+
+The `MirrorAxis` class is used to invert [`Pitch`](/python/pitch) vectors about a fixed point via [`Pitch.invert`](/python/pitch/#invert).
+
+### Class Constructor
+
+```python
+MirrorAxis(p: Pitch, q: Pitch)
+```
+
+A `MirrorAxis` is constructed from two `Pitch` vectors, which would be sent to each other via inversion about the resultant axis.
+
+```python
+axis = MirrorAxis(
+    SPN.to_pitch("C4"),
+    SPN.to_pitch("G4"),
+)
+
+p = SPN.to_pitch("E4")
+p.invert(axis)  # Eb4
+```
+
+### `from_spn`
+
+```python
+MirrorAxis.from_spn(ps: str, qs: str) -> MirrorAxis
+```
+
+Creates a `MirrorAxis` using [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) strings for two `Pitch` vectors which would be sent to each other via inversion about the resultant axis.
+
+```python
+axis = MirrorAxis.from_spn("C4", "G4")
+```

@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Currently there are two implementations of Meantonal: one in JavaScript and one in C.
+Currently there are three implementations of Meantonal: one in JavaScript, one in Python and one in C.
 
 ## JavaScript
 
@@ -41,6 +41,52 @@ q = q.snapDiatonic(context); // q has now snapped to Eb4
 let axis = MirrorAxis.fromSPN("D4", "A4"));
 
 q = q.invert(axis); // q is now G#4
+```
+
+## Python
+
+Install the `meantonal` package from PyPI:
+
+<Tabs>
+  <TabItem label="Bash">
+```bash frame=none
+pip install meantonal
+```
+  </TabItem>
+</Tabs>
+
+You're now ready to import and use Meantonal's classes.
+
+```python
+from meantonal import SPN, Helmholtz, Interval, TonalContext, MirrorAxis
+
+p = SPN.to_pitch("C4")
+q = Helmholtz.to_pitch("e'")
+
+m = p.interval_to(q)  # M3
+n = Interval.from_name("M3")
+
+m.is_equal(n)  # True
+
+context = TonalContext.from_strings("Eb", "major")
+
+q = q.snap_to(context)  # q has now snapped to Eb4
+
+axis = MirrorAxis.from_spn("D4", "A4")
+
+q = q.invert(axis)  # q is now G#4
+```
+
+Since pitches and intervals are just vectors, the Python implementation also
+supports natural arithmetic on them directly, in the style of
+`datetime`/`timedelta`:
+
+```python
+p = SPN.to_pitch("C4")
+m = Interval.from_name("M3")
+
+q = p + m  # E4
+q - p      # M3
 ```
 
 ## C

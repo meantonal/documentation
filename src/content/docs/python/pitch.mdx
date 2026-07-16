@@ -1,0 +1,506 @@
+---
+title: Pitch
+description: An overview of the Pitch class and its methods in the Python implementation.
+sidebar:
+  order: 1
+---
+
+This page details the `Pitch` class and all its methods.
+
+## Creating Pitches
+
+There are three main ways to create `Pitch` vectors from scratch. Using the [class constructor](#class-constructor), using the class method [`Pitch.from_chroma`](#from_chroma), or using methods on a [parse class](/python/parse) to parse a `Pitch` from a string format like SPN or LilyPond.
+
+### Class Constructor
+
+```python
+Pitch(w: int, h: int)
+```
+
+Internally a pitch is defined as some number of whole steps and some number of half steps from $\sf{C}_{-1}$ (the lowest MIDI note). You can directly initialise a `Pitch` like so:
+
+```python
+p = Pitch(25, 10)  # coordinates for C4
+
+p.w  # 25
+p.h  # 10
+```
+
+### `from_chroma`
+
+```python
+Pitch.from_chroma(chroma: int, octave: int) -> Pitch
+```
+
+This class method allows you to initialise a `Pitch` from its "chroma", the signed distance of a note from C in perfect 5ths, and its octave using SPN numbering:
+
+```python
+p = Pitch.from_chroma(0, 4)
+
+p.w  # 25
+p.h  # 10
+```
+
+### `from_degree`
+
+```python
+Pitch.from_degree(degree: int,
+                  alteration: int,
+                  octave: int,
+                  context: TonalContext) -> Pitch
+```
+
+Creates a `Pitch` vector from a specified scale degree (0-indexed, tonic is 0) and chromatic alteration (0 is diatonic) within the passed-in `TonalContext`, along with its octave number (using [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) octave numbering).
+
+Note that this function is quite happy to produce a `Pitch` that could never reasonably occur in a given context, e.g. Gbb4 in the key of C# major.
+
+```python
+context = TonalContext.from_strings("Eb", "major")
+p = Pitch.from_degree(2, -1, 4, context)  # Gb4
+```
+
+## Common Queries
+
+The following properties and methods extract information from a `Pitch` vector.
+
+### `midi`
+
+```python
+Pitch.midi: int  # read-only property
+```
+
+The standard MIDI number of a `Pitch`. Raises a `ValueError` if outside of the MIDI range of $\sf{C}_{-1}$ to $\sf{G}_9$:
+
+```python
+p = SPN.to_pitch("C4")
+p.midi  # 60
+
+p = SPN.to_pitch("C-1")
+p.midi  # 0
+
+p = SPN.to_pitch("G9")
+p.midi  # 127
+
+p = SPN.to_pitch("A-2")
+p.midi  # ValueError: Outside of standard MIDI range: -3
+
+p = SPN.to_pitch("A9")
+p.midi  # ValueError: Outside of standard MIDI range: 129
+```
+
+### `chroma`
+
+```python
+Pitch.chroma: int  # read-only property
+```
+
+The signed distance of a `Pitch` from C in perfect fifths.
+
+```python
+p = SPN.to_pitch("D3")
+p.chroma  # 2, because C G D => 0 1 2
+
+p = SPN.to_pitch("Eb5")
+p.chroma  # -3, because Eb Bb F C => -3 -2 -1 0
+```
+
+### `pc7`
+
+```python
+Pitch.pc7: int  # read-only property
+```
+
+The 0-indexed 7-tone pitch class of a `Pitch`. Equivalent to a numerical representation of its letter name, where C is 0:
+
+```python
+p = SPN.to_pitch("C4")
+p.pc7  # 0
+
+p = SPN.to_pitch("F4")
+p.pc7  # 3
+```
+
+### `pc12`
+
+```python
+Pitch.pc12: int  # read-only property
+```
+
+The 12-tone pitch class of a note. C is 0.
+
+```python
+p = SPN.to_pitch("C4")
+p.pc12  # 0
+
+p = SPN.to_pitch("E4")
+p.pc12  # 4
+
+p = SPN.to_pitch("Fb4")
+p.pc12  # also 4, due to enharmonicity in 12TET
+```
+
+### `letter`
+
+```python
+Pitch.letter: str  # read-only property
+```
+
+The letter component of a `Pitch` vector's standard name.
+
+```python
+p = SPN.to_pitch("E4")
+p.letter  # "E"
+```
+
+### `accidental`
+
+```python
+Pitch.accidental: int  # read-only property
+```
+
+The accidental component of a `Pitch` vector's standard name, expressed as a signed integer.
+- 0 means natural.
+- +1 means sharp.
+- -1 means flat.
+- +2 means double-sharp.
+- -2 means double-flat.
+- etc. for any arbitrary accidental.
+
+```python
+p = SPN.to_pitch("Fx4")
+p.accidental  # 2
+
+p = SPN.to_pitch("Eb4")
+p.accidental  # -1
+
+p = SPN.to_pitch("Abbb4")
+p.accidental  # -3
+```
+
+### `octave`
+
+```python
+Pitch.octave: int  # read-only property
+```
+
+The octave number of a `Pitch` (in [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) numbering).
+
+```python
+p = SPN.to_pitch("F4")
+p.octave  # 4
+```
+
+### `interval_to`
+
+```python
+Pitch.interval_to(p: Pitch) -> Interval
+```
+
+Returns the [`Interval`](/python/interval) from the current Pitch to another passed-in vector. Often a more convenient way to access [`Interval.between`](/python/interval/#between).
+
+```python
+p = SPN.to_pitch("C4")
+q = SPN.to_pitch("E4")
+
+m = p.interval_to(q)     # m now holds a major third Interval
+n = Interval.between(p, q)  # equivalent
+k = q - p                   # also equivalent (see Operators below)
+```
+
+### `steps_to`
+
+```python
+Pitch.steps_to(p: Pitch) -> int
+```
+
+Returns the (signed) number of diatonic steps separating a `Pitch` from another passed-in `Pitch`.
+
+```python
+p = SPN.to_pitch("C4")
+q = SPN.to_pitch("F#4")
+
+p.steps_to(q)  # 3
+
+q = SPN.to_pitch("Ab3")
+p.steps_to(q)  # -2
+```
+
+### `is_equal`
+
+```python
+Pitch.is_equal(p: Pitch) -> bool
+```
+
+Returns `True` if and only if the passed in `Pitch` vector and the current vector are identical. Note that this does **not** mean "are enharmonically equivalent in 12TET", or "have the same pitch chroma": they must literally hold the same coordinates.
+
+The `==` operator behaves identically, and is usually more convenient in Python.
+
+```python
+p = SPN.to_pitch("C4")
+q = SPN.to_pitch("C5")
+
+p.is_equal(q)  # False
+
+q = SPN.to_pitch("B3")
+p.is_equal(q)  # False
+
+q = SPN.to_pitch("C4")
+p.is_equal(q)  # True
+p == q         # True (equivalent)
+```
+
+### `is_enharmonic`
+
+```python
+Pitch.is_enharmonic(p: Pitch, edo: int = 12) -> bool
+```
+
+Returns `True` if the passed in `Pitch` is enharmonic to the current `Pitch` in the passed in EDO tuning. If no second argument is passed this method defaults to 12TET. Notes will still register as enharmonic if they are in different octaves.
+
+```python
+p = SPN.to_pitch("C#4")
+q = SPN.to_pitch("Db4")
+
+p.is_enharmonic(q)      # True (in 12TET)
+p.is_enharmonic(q, 31)  # False (in 31EDO)
+
+p = SPN.to_pitch("Gbb4")
+q = SPN.to_pitch("Ex4")
+
+p.is_enharmonic(q)      # False (in 12TET)
+p.is_enharmonic(q, 31)  # True (in 31EDO)
+```
+
+### `degree_in`
+
+```python
+Pitch.degree_in(context: TonalContext) -> int
+```
+
+Returns the scale degree number (0-indexed, such that the tonic degree is 0) represented by the `Pitch` in the passed-in [`TonalContext`](/python/tonality):
+
+```python
+context = TonalContext.from_strings("C", "major")
+
+p = SPN.to_pitch("C4")
+p.degree_in(context)  # 0
+
+p = SPN.to_pitch("D4")
+p.degree_in(context)  # 1
+
+p = SPN.to_pitch("D#4")
+p.degree_in(context)  # still 1 (just an altered variant)
+```
+
+### `alteration_in`
+
+```python
+Pitch.alteration_in(context: TonalContext) -> int
+```
+
+Returns the alteration represented by the `Pitch` in the passed-in [`TonalContext`](/python/tonality).
+- 0 represents a diatonic degree.
+- +1 and -1 represent raised and lowered degrees respectively.
+- +2 and -2 represent degrees too sharp or too flat to belong in a given TonalContext.
+
+```python
+context = TonalContext.from_strings("G", "minor")
+
+p = SPN.to_pitch("Bb4")
+p.alteration_in(context)  # 0, Bb is diatonic in G minor
+
+p = SPN.to_pitch("B4")
+p.alteration_in(context)  # 1, B is raised in G minor
+
+p = SPN.to_pitch("Bbb4")
+p.alteration_in(context)  # -2, Bbb is too flat for this context
+```
+
+### `audible`
+
+```python
+Pitch.audible(p: Pitch, T: TuningMap | None = None) -> bool  # static method
+```
+
+Returns `True` if the passed-in `Pitch`'s frequency, as rendered by the given `TuningMap`, falls within the approximate range of human hearing (20Hz to 20kHz, inclusive of both bounds). Uses an optional `TuningMap` to determine the `Pitch`'s frequency; if no `TuningMap` is passed in, defaults to 12TET.
+
+```python
+p = SPN.to_pitch("A4")
+Pitch.audible(p)  # True, A4 = 440Hz
+
+p = SPN.to_pitch("C-1")
+Pitch.audible(p)  # False, C-1 (MIDI 0) is ~8.18Hz, below the 20Hz floor
+```
+
+### `highest`
+
+```python
+Pitch.highest(arr: list[Pitch], T: TuningMap | None = None) -> Pitch  # static method
+```
+
+Returns the highest `Pitch` in a passed-in list. Uses an optional `TuningMap` to determine which `Pitch` is higher than the others; if no `TuningMap` is passed in, defaults to 12TET.
+
+```python
+pitches = [SPN.to_pitch(p) for p in ["C4", "F#4", "D4", "Bb4", "A#4", "G4"]]
+
+highest = Pitch.highest(pitches)  # highest holds Bb4
+```
+
+### `lowest`
+
+```python
+Pitch.lowest(arr: list[Pitch], T: TuningMap | None = None) -> Pitch  # static method
+```
+
+Returns the lowest `Pitch` in a passed-in list. Uses an optional `TuningMap` to determine which `Pitch` is lower than the others; if no `TuningMap` is passed in, defaults to 12TET.
+
+```python
+pitches = [SPN.to_pitch(p) for p in ["C4", "F#4", "D4", "Bb4", "A#4", "G4"]]
+
+lowest = Pitch.lowest(pitches)  # lowest holds C4
+```
+
+### `nearest`
+
+```python
+Pitch.nearest(arr: list[Pitch], T: TuningMap | None = None) -> Pitch
+```
+
+Returns the nearest `Pitch` in a passed-in list to the calling `Pitch` instance. Uses an optional `TuningMap` to determine which `Pitch` is nearer than the others; if no `TuningMap` is passed in, defaults to 12TET.
+
+```python
+pitches = [SPN.to_pitch(p) for p in ["C4", "F#4", "D4", "Bb4", "A#4", "G4"]]
+p = SPN.to_pitch("Eb4")
+
+nearest = p.nearest(pitches)  # nearest holds D4
+```
+
+## Transformations
+
+The following methods produce a new `Pitch` from the current `Pitch`. None of them mutate the original object.
+
+### `transpose_real`
+
+```python
+Pitch.transpose_real(m: Interval) -> Pitch
+```
+
+Transposes the underlying `Pitch` by the passed in Interval vector. Returns the transposed `Pitch` as a new vector:
+
+```python
+p = SPN.to_pitch("C4")
+q = SPN.to_pitch("E4")
+m = Interval.from_name("M3")
+
+p = p.transpose_real(m)
+p.is_equal(q)  # True
+```
+
+### `invert`
+
+```python
+Pitch.invert(axis: MirrorAxis) -> Pitch
+```
+
+Invert a `Pitch` about the passed in [`MirrorAxis`](/python/axis). A `MirrorAxis` is created from two `Pitch`es that will be mapped to each other by the inversion across it, or via the [MirrorAxis.from_spn](/python/axis/#from_spn) method using SPN strings. Returns the inverted `Pitch` as a new vector.
+
+```python
+axis = MirrorAxis.from_spn("C4", "G4")
+p = SPN.to_pitch("Db4")
+
+p = p.invert(axis)  # p now points to F#4
+```
+
+### `snap_to`
+
+```python
+Pitch.snap_to(context: TonalContext) -> Pitch
+```
+
+Snaps a `Pitch` vector to the diatonic position for that letter-name in
+the passed-in [`TonalContext`](/python/tonality). Returns the result as a new `Pitch`:
+
+```python
+context = TonalContext.from_strings("C", "major")
+p = SPN.to_pitch("F#4")
+
+p = p.snap_to(context)  # p now points to F4
+```
+
+### `transpose_diatonic`
+
+```python
+Pitch.transpose_diatonic(steps: int, context: TonalContext) -> Pitch
+```
+
+Transposes a `Pitch` by a generic interval, snapping to diatonic values.
+- Interval measured in steps, such that 0 is a unison.
+
+```python
+context = TonalContext.from_strings("C", "major")
+p = SPN.to_pitch("F#4")
+
+p = p.transpose_diatonic(4, context)  # p now points to C5
+```
+
+## Operators
+
+The Python implementation supports natural arithmetic between pitches and intervals, in the style of `datetime`/`timedelta`. A `Pitch` is a *point* and an [`Interval`](/python/interval) is a *displacement* between points:
+
+| Expression | Result | Equivalent to |
+|---|---|---|
+| `p + m` / `m + p` | `Pitch` | `p.transpose_real(m)` |
+| `p - m` | `Pitch` | `p.transpose_real(m.negative)` |
+| `q - p` | `Interval` | `Interval.between(p, q)` |
+| `p == q` | `bool` | `p.is_equal(q)` |
+
+```python
+p = SPN.to_pitch("C4")
+m = Interval.from_name("M3")
+
+q = p + m  # E4
+q - p      # a major third Interval
+p - m      # Ab3
+```
+
+`Pitch + Pitch` is deliberately undefined — adding two points is meaningless, just like adding two `datetime`s — and raises a `TypeError`.
+
+## Ranges
+
+### `range.diatonic`
+
+```python
+Pitch.range.diatonic(from_: Pitch, to: Pitch,
+                     context: TonalContext) -> Iterator[Pitch]
+```
+
+Generates a diatonic range of `Pitch` vectors between the two boundary `Pitch`es passed-in, within the specified `TonalContext`.
+
+```python
+context = TonalContext.from_strings("C", "major")
+p = SPN.to_pitch("C4")
+q = SPN.to_pitch("E5")
+
+for r in Pitch.range.diatonic(p, q, context):
+    print(SPN.from_pitch(r))
+# C4 D4 E4 F4 G4 A4 B4 C5 D5 E5
+```
+
+### `range.chromatic`
+
+```python
+Pitch.range.chromatic(from_: Pitch, to: Pitch,
+                      context: TonalContext) -> Iterator[Pitch]
+```
+
+Generates a chromatic range of `Pitch` vectors between the two boundary `Pitch`es passed-in, within the specified `TonalContext`. Essentially all pitches between the boundaries that could occur diatonically or chromatically in a given tonal context.
+
+```python
+context = TonalContext.from_strings("C", "major")
+p = SPN.to_pitch("C4")
+q = SPN.to_pitch("E5")
+
+for r in Pitch.range.chromatic(p, q, context):
+    print(SPN.from_pitch(r))
+# C4 Db4 C#4 D4 Eb4 D#4 E4 F4 Gb4 F#4 G4 Ab4 G#4 A4 Bb4 A#4 B4 C5 Db5 C#5 D5 Eb5 D#5 E5
+```

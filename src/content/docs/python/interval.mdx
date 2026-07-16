@@ -1,0 +1,405 @@
+---
+title: Interval
+description: An overview of the Interval class and its methods in the Python implementation.
+sidebar:
+  order: 2
+---
+
+This page details the `Interval` class and all its methods.
+
+## Creating Intervals
+
+There are three main ways to create `Interval` vectors from scratch. Directly, using the [class constructor](#class-constructor); using strings via the class methods [`Interval.from_name`](#from_name) or [`Interval.from_spn`](#from_spn); or from two [`Pitch`](/python/pitch) vectors via [`Interval.between`](#between) (or, equivalently, by subtracting them: `q - p`).
+
+### Class Constructor
+
+```python
+Interval(w: int, h: int)
+```
+
+Internally an interval is defined as some number of whole steps and some number of half steps from the unison. You can directly initialise an `Interval` like so:
+
+```python
+m = Interval(5, 2)  # coordinates for an octave
+
+m.w  # 5
+m.h  # 2
+```
+
+### `from_name`
+
+```python
+Interval.from_name(name: str) -> Interval
+```
+
+It's often more convenient to initialise an `Interval` from a standard interval name as a string. `Interval.from_name` parses such a string, raising a `ValueError` if it is not a valid interval name:
+
+```python
+m = Interval.from_name("P8")
+
+m.w  # 5
+m.h  # 2
+```
+
+### `from_spn`
+
+```python
+Interval.from_spn(ps: str, qs: str) -> Interval
+```
+
+Initialises an interval from two note names specified as [SPN](https://en.wikipedia.org/wiki/Scientific_pitch_notation) strings. Measures the distance *from* the first `Pitch` *to* the second.
+
+```python
+m = Interval.from_spn("C4", "C5")
+
+m.w  # 5
+m.h  # 2
+```
+
+### `between`
+
+```python
+Interval.between(p: Pitch, q: Pitch) -> Interval
+```
+
+Measures the distance *from* the first `Pitch` *to* the second pitch. That is, `Interval.between(p, q)` returns the vector $q - p$ — which you can also write literally in Python as `q - p`:
+
+```python
+p = SPN.to_pitch("C4")
+q = SPN.to_pitch("C5")
+m = Interval.between(p, q)  # or: m = q - p
+
+m.w  # 5
+m.h  # 2
+```
+
+## Common Queries
+
+The following properties and methods extract information from an `Interval` vector.
+
+### `chroma`
+
+```python
+Interval.chroma: int  # read-only property
+```
+
+The signed distance of an `Interval` from the unison in perfect fifths:
+
+```python
+m = Interval.from_name("P5")
+m.chroma  # 1
+
+m = Interval.from_name("M3")
+m.chroma  # 4
+
+m = Interval.from_name("m3")
+m.chroma  # -3
+```
+
+### `is_diatonic`
+
+```python
+Interval.is_diatonic: bool  # read-only property
+```
+
+Affirms whether a given interval is capable of occurring diatonically (i.e. is found within the major scale).
+
+```python
+m = Interval.from_name("P5")
+m.is_diatonic  # True
+
+m = Interval.from_name("A4")
+m.is_diatonic  # True
+
+m = Interval.from_name("A6")
+m.is_diatonic  # False
+```
+
+### `is_tonal`
+
+```python
+Interval.is_tonal: bool  # read-only property
+```
+
+Affirms whether a given interval is capable of occurring in a tonal context, whether diatonically or chromatically (i.e. whether it is formed between notes that could be within a half step's distance of a shared diatonic scale).
+
+```python
+m = Interval.from_name("P5")
+m.is_tonal  # True
+
+m = Interval.from_name("A6")
+m.is_tonal  # True
+
+m = Interval.from_name("ddd6")
+m.is_tonal  # False
+```
+
+### `quality`
+
+```python
+Interval.quality: int  # read-only property
+```
+
+The quality component of an `Interval` vector's standard name, expressed as a signed integer.
+- 0 means perfect.
+- +1 means major.
+- -1 means minor.
+- +2 means augmented.
+- -2 means diminished.
+- etc. for any arbitrary quality.
+
+```python
+m = Interval.from_name("P5")
+m.quality  # 0
+
+m = Interval.from_name("M3")
+m.quality  # 1
+
+m = Interval.from_name("m3")
+m.quality  # -1
+
+m = Interval.from_name("A6")
+m.quality  # 2
+```
+
+### `stepspan`
+
+```python
+Interval.stepspan: int  # read-only property
+```
+
+The "stepspan" of an `Interval` is the number of diatonic steps it contains, where 0 is the unison, 1 is a generic second and so on. Essentially one less than the number conventionally used to describe the generic size of intervals.
+
+```python
+m = Interval.from_name("M6")
+m.stepspan  # 5
+
+m = Interval.from_name("P8")
+m.stepspan  # 7
+```
+
+### `pc7`
+
+```python
+Interval.pc7: int  # read-only property
+```
+
+The 0-indexed 7-tone pitch class of an Interval. Essentially its size in steps, modulo 7.
+
+```python
+m = Interval.from_name("M6")
+m.pc7  # 5
+
+m = Interval.from_name("M13")
+m.pc7  # also 5
+```
+
+### `pc12`
+
+```python
+Interval.pc12: int  # read-only property
+```
+
+The 12-tone pitch class interval of an `Interval` vector.
+
+```python
+m = Interval.from_name("P5")
+m.pc12  # 7
+```
+
+### `name`
+
+```python
+Interval.name: str  # read-only property
+```
+
+The standard name of an `Interval` rendered as a string.
+
+```python
+m = Interval.from_name("d5")
+m.name  # "d5"
+```
+
+### `simple`
+
+```python
+Interval.simple: Interval  # read-only property
+```
+
+The size of an interval, reduced until it is smaller than an octave. This includes the octave, which is considered a compound unison here.
+
+```python
+m = Interval.from_name("M17")
+m.simple.name  # "M3"
+```
+
+### `negative`
+
+```python
+Interval.negative: Interval  # read-only property
+```
+
+The flipped version of an `Interval`. An ascending major 3rd will become a descending major 3rd. Or for vertical intervals, voices will exchange places. Equivalent to the unary minus operator: `-m`.
+
+```python
+m = Interval.from_name("M3")
+p = SPN.to_pitch("C4")
+
+p.transpose_real(m)           # E4
+p.transpose_real(m.negative)  # Ab3
+p + -m                        # Ab3 (equivalent)
+```
+
+### `is_equal`
+
+```python
+Interval.is_equal(m: Interval) -> bool
+```
+
+Returns `True` if and only if the passed in `Interval` vector and the current vector are identical. Note that this does not mean "are enharmonically equivalent in 12TET", or "have the same chroma": they must literally hold the same coordinates.
+
+The `==` operator behaves identically, and is usually more convenient in Python.
+
+```python
+m = Interval.from_name("A4")
+n = Interval.from_name("d5")
+
+m.is_equal(n)  # False
+
+n = Interval.from_name("A11")
+m.is_equal(n)  # False
+
+n = Interval.from_name("A4")
+m.is_equal(n)  # True
+m == n         # True (equivalent)
+```
+
+### `is_enharmonic`
+
+```python
+Interval.is_enharmonic(m: Interval, edo: int = 12) -> bool
+```
+
+Returns `True` if the passed in `Interval` is enharmonic to the current `Interval` in the passed in EDO tuning. If no second argument is passed this method defaults to 12TET. Intervals will still register as enharmonic if one is simple and the other is compound.
+
+```python
+m = Interval.from_name("m7")
+n = Interval.from_name("A6")
+
+m.is_enharmonic(n)      # True (in 12TET)
+m.is_enharmonic(n, 31)  # False (in 31EDO)
+
+m = Interval.from_name("AAAA6")
+n = Interval.from_name("P8")
+
+m.is_enharmonic(n)      # False (in 12TET)
+m.is_enharmonic(n, 31)  # True (in 31EDO)
+```
+
+## Transformations
+
+The following methods produce a new vector from the current `Interval`. None of them mutate the original object.
+
+### `add`
+
+```python
+Interval.add(m: Interval) -> Interval
+```
+
+Adds two `Interval` vectors together. Equivalent to the `+` operator.
+
+```python
+m = Interval.from_name("M3")
+n = Interval.from_name("m3")
+
+m.add(n)  # P5
+m + n     # P5 (equivalent)
+```
+
+### `subtract`
+
+```python
+Interval.subtract(m: Interval) -> Interval
+```
+
+Subtracts two `Interval` vectors. Equivalent to the `-` operator.
+
+```python
+m = Interval.from_name("P5")
+n = Interval.from_name("m3")
+
+m.subtract(n)  # M3
+m - n          # M3 (equivalent)
+```
+
+### `times`
+
+```python
+Interval.times(x: int) -> Interval
+```
+
+Multiplies an `Interval` vector by a scalar. Equivalent to the `*` operator.
+
+```python
+m = Interval.from_name("P5")
+
+m.times(2)  # M9
+m * 2       # M9 (equivalent)
+```
+
+## Operators
+
+`Interval` vectors support natural arithmetic through Python's operators:
+
+| Expression | Result | Equivalent to |
+|---|---|---|
+| `m + n` | `Interval` | `m.add(n)` |
+| `m - n` | `Interval` | `m.subtract(n)` |
+| `-m` | `Interval` | `m.negative` |
+| `m * x` / `x * m` | `Interval` | `m.times(x)` |
+| `m == n` | `bool` | `m.is_equal(n)` |
+| `p + m` / `m + p` | `Pitch` | `p.transpose_real(m)` |
+
+```python
+m = Interval.from_name("M3")
+
+m + m  # A5 -- three major thirds only close the octave in 12TET,
+m * 3  # A7    so their exact sum is an augmented 7th (e.g. C→B#)
+```
+
+Multiplying by a non-integer scalar raises a `TypeError`: intervals live on an integer lattice.
+
+## Ranges
+
+### `range.diatonic`
+
+```python
+Interval.range.diatonic(from_: Interval | None = None,
+                        to: Interval | None = None) -> Iterator[Interval]
+```
+
+Generates a range of `Interval` vectors between the two boundary `Interval`s passed-in, such that all intervals found diatonically occur.
+
+If no boundary `Interval`s are specified, defaults to P1 - P8.
+
+```python
+m = Interval.from_name("P1")
+n = Interval.from_name("M9")
+for k in Interval.range.diatonic(m, n):
+    print(k.name)
+# P1 m2 M2 m3 M3 P4 d5 A4 P5 m6 M6 m7 M7 P8 m9
+```
+
+### `range.melodic`
+
+```python
+Interval.range.melodic() -> Iterator[Interval]
+```
+
+Generates all the intervals traditionally considered "easily singable". Essentially no dissonant leaps or augmented/diminished intervals, nor leaps bigger than an octave.
+
+```python
+for m in Interval.range.melodic():
+    print(m.name)
+# P1 m2 M2 m3 M3 P4 P5 m6 M6 P8
+```

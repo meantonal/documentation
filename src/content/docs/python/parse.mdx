@@ -1,0 +1,162 @@
+---
+title: Parse
+description: An overview of the SPN, LilyPond, Helmholtz and ABC parser classes in the Python implementation.
+sidebar:
+  order: 6
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Meantonal provides some classes to parse to and from common formats:
+
+- `SPN` handles [Scientific Pitch Notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation)
+- `LilyPond` handles [LilyPond](https://lilypond.org/) strings.
+- `Helmholtz` handles [Helmholtz Pitch Notation](https://en.wikipedia.org/wiki/Helmholtz_pitch_notation).
+- `ABC` handles [ABC notation](https://en.wikipedia.org/wiki/ABC_notation).
+
+Each provides static `to_pitch` and `from_pitch` methods to convert between strings and [`Pitch`](/python/pitch) vectors. All of them raise a `ValueError` when given a string they cannot parse, or a `Pitch` they cannot render.
+
+<Aside type="tip" title="Note" icon="information">
+
+These helper classes are not robust enough to be used to parse LilyPond or ABC files directly. They are just for entering and printing `Pitch` names in familiar formats.
+
+</Aside>
+
+## `SPN`
+
+### `to_pitch`
+
+```python
+SPN.to_pitch(spn: str) -> Pitch  # static method
+```
+
+Creates a `Pitch` vector from a Scientific Pitch Notation string.
+
+```python
+p = SPN.to_pitch("C#4")
+```
+
+### `from_pitch`
+
+```python
+SPN.from_pitch(p: Pitch) -> str  # static method
+```
+
+Returns the SPN name of a `Pitch`. Raises a `ValueError` if the `Pitch`'s accidental is altered by more than 8 sharps/flats — an arbitrary limit chosen to avoid handling strings of unbounded size, and because exceeding it almost certainly indicates a logic error upstream.
+
+```python
+p = SPN.to_pitch("C#4")
+SPN.from_pitch(p)  # "C#4"
+
+p = Pitch.from_chroma(63, 4)  # an extreme accidental (+9), unlikely from real usage
+SPN.from_pitch(p)  # ValueError: Cannot render SPN name: accidental (9) exceeds the maximum of ±8 sharps/flats.
+```
+
+## `LilyPond`
+
+### `to_pitch`
+
+```python
+LilyPond.to_pitch(s: str) -> Pitch  # static method
+```
+
+Creates a `Pitch` vector from a LilyPond note name.
+
+```python
+p = LilyPond.to_pitch("cis'")
+```
+
+### `from_pitch`
+
+```python
+LilyPond.from_pitch(p: Pitch) -> str  # static method
+```
+
+Returns the (absolute) LilyPond name of a `Pitch`. Raises a `ValueError` if the `Pitch`'s accidental goes beyond a double sharp/flat, or if its octave falls outside -3 to 11 (a healthy margin beyond the range of human hearing). LilyPond can't represent either case, and both almost always indicate a logic error upstream.
+
+```python
+p = LilyPond.to_pitch("cis'")
+LilyPond.from_pitch(p)  # "cis'"
+
+p = Pitch.from_chroma(21, 4)  # accidental of +3, beyond LilyPond's double sharp
+LilyPond.from_pitch(p)  # ValueError: Cannot render LilyPond name: accidental (3) exceeds the double sharp/flat limit (±2).
+```
+
+### `relative`
+
+```python
+LilyPond.relative(start: Pitch)  # static method
+```
+
+Returns a new instance of a relative mode LilyPond parser, with a `.to_pitch` method that works exactly like the `LilyPond.to_pitch` static method, but positioning each `Pitch` relative to the most recently parsed `Pitch`, before adjusting via octave marks.
+
+```python
+p = SPN.to_pitch("C4")
+parser = LilyPond.relative(p)
+
+p = parser.to_pitch("g")    # G3, since it's the nearest G to C4
+p = parser.to_pitch("fis")  # F#3, since it's the nearest F# to G3
+p = parser.to_pitch("d'")   # D4, since the ' mark adjusts the octave by +1
+```
+
+Relative mode is often more convenient to reason around when entering pitches by hand.
+
+## `Helmholtz`
+
+### `to_pitch`
+
+```python
+Helmholtz.to_pitch(s: str) -> Pitch  # static method
+```
+
+Creates a `Pitch` vector from a Helmholtz note name.
+
+```python
+p = Helmholtz.to_pitch("c#'")
+```
+
+### `from_pitch`
+
+```python
+Helmholtz.from_pitch(p: Pitch) -> str  # static method
+```
+
+Returns the Helmholtz note name of a `Pitch`. Raises a `ValueError` if the `Pitch`'s accidental is altered by more than 8 sharps/flats — an arbitrary limit chosen to avoid handling strings of unbounded size, and because it almost always indicates a logic error upstream — or if its octave falls outside -3 to 11.
+
+```python
+p = Helmholtz.to_pitch("c#'")
+Helmholtz.from_pitch(p)  # "c#'"
+
+p = Pitch.from_chroma(70, 4)  # an extreme accidental (+10), unlikely from real usage
+Helmholtz.from_pitch(p)  # ValueError: Cannot render Helmholtz name: accidental (10) exceeds the maximum of ±8 sharps/flats.
+```
+
+## `ABC`
+
+### `to_pitch`
+
+```python
+ABC.to_pitch(s: str) -> Pitch  # static method
+```
+
+Creates a `Pitch` vector from an ABC note name.
+
+```python
+p = ABC.to_pitch("^c'")
+```
+
+### `from_pitch`
+
+```python
+ABC.from_pitch(p: Pitch) -> str  # static method
+```
+
+Returns the ABC note name of a `Pitch`. Raises a `ValueError` if the `Pitch`'s accidental goes beyond a double sharp/flat, or if its octave falls outside -3 to 11 (a healthy margin beyond the range of human hearing). ABC notation can't represent either case, and both almost always indicate a logic error upstream.
+
+```python
+p = ABC.to_pitch("^c'")
+ABC.from_pitch(p)  # "^c'"
+
+p = Pitch.from_chroma(21, 4)  # accidental of +3, beyond ABC's double sharp
+ABC.from_pitch(p)  # ValueError: Cannot render ABC name: accidental (3) exceeds the double sharp/flat limit (±2).
+```
